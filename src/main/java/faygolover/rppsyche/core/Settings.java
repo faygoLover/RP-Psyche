@@ -23,7 +23,7 @@ public final class Settings {
     /** Пока что-то давит, спад слабее: множитель. */
     public double stressDecayWhilePressed = 0.25;
     /** Толчки (выстрел, взрыв, удар) входят в стресс не сразу: такая доля накопленного за секунду. */
-    public double impulseFlow = 0.4;
+    public double impulseFlow = 0.25;
     /** Плохой рассудок ускоряет рост стресса: ×(1 + k × (1 − рассудок/100)). */
     public double sanityStressGain = 0.6;
     /** «Пол» стресса от плохого рассудка: (100 − рассудок) × k — ниже не спадает. */
@@ -37,12 +37,12 @@ public final class Settings {
     // ---------------------------------------------------------------- темнота
     /** Полная тьма: свет у глаз не выше этого (0–15). */
     public int darkLight = 1;
-    /** Сколько секунд во тьме без света — пока ничего. */
-    public double darkDelay = 30;
+    /** Сколько секунд во тьме без света — пока ничего (три минуты). */
+    public double darkDelay = 180;
     /** Потом стресс растёт: сначала столько ед./с, через {@link #darkRamp} секунд — {@link #darkRateMax}. */
-    public double darkRate = 0.3;
-    public double darkRateMax = 1.0;
-    public double darkRamp = 180;
+    public double darkRate = 0.2;
+    public double darkRateMax = 0.8;
+    public double darkRamp = 300;
     /** Свет у игрока рядом (в этом радиусе) светит и тебе. */
     public double darkFriendLight = 6;
     /**
@@ -81,11 +81,11 @@ public final class Settings {
     public double calmNearbyGain = 0.85;
 
     // ---------------------------------------------------------------- бой
-    /** Выстрел слышно в этом радиусе; ближе {@link #shotCloseRadius} — сильнее. */
+    /** Выстрел слышно в этом радиусе; ближе {@link #shotCloseRadius} — сильнее. По умолчанию 0: давит только пуля рядом. */
     public double shotRadius = 64;
     public double shotCloseRadius = 16;
-    public double shotClose = 3;
-    public double shotFar = 1;
+    public double shotClose = 0;
+    public double shotFar = 0;
     /** Пуля прошла ближе этого (блоков) от головы — подавление. */
     public double nearMissRadius = 2.5;
     public double nearMiss = 12;
@@ -93,17 +93,17 @@ public final class Settings {
     public double explosionRadius = 24;
     public double explosion = 18;
     /** Свой урон: толчок за 1 ед. урона (ванильные полсердца) и предел за удар. */
-    public double hurtPerDamage = 2.5;
-    public double hurtMax = 25;
+    public double hurtPerDamage = 1.5;
+    public double hurtMax = 15;
 
     // ---------------------------------------------------------------- тело (RP Medicine)
     /** Боль выше порога: стресс + (боль − порог)/(100 − порог) × ед./с. */
     public double painThreshold = 20;
-    public double painRate = 1.0;
+    public double painRate = 0.6;
     /** Лежачий рядом (нокдаун, обморок, тело вышедшего) — ед./с; клиническая смерть — ед./с. */
     public double downedRadius = 12;
-    public double downedRate = 0.6;
-    public double clinicalRate = 1.2;
+    public double downedRate = 0.4;
+    public double clinicalRate = 0.8;
     /** Голод и жажда со второй стадии — ед./с. */
     public double hungerRate = 0.12;
     public double thirstRate = 0.12;
