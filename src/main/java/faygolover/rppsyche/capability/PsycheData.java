@@ -34,6 +34,7 @@ public final class PsycheData {
     /** Последнее отправленное клиенту. */
     public float sentStress = -1, sentSanity = -1;
     public int sentFlags = -1;
+    public float sentTremor = -1;
     public int syncAge;
     /** Секунды до следующей отправки ощущений мода тела. */
     public int sensationTimer;

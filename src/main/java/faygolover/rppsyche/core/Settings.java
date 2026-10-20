@@ -37,12 +37,15 @@ public final class Settings {
     // ---------------------------------------------------------------- темнота
     /** Полная тьма: свет у глаз не выше этого (0–15). */
     public int darkLight = 1;
-    /** Сколько секунд во тьме без света — пока ничего (три минуты). */
-    public double darkDelay = 180;
-    /** Потом стресс растёт: сначала столько ед./с, через {@link #darkRamp} секунд — {@link #darkRateMax}. */
-    public double darkRate = 0.2;
-    public double darkRateMax = 0.8;
-    public double darkRamp = 300;
+    /** Сколько секунд во тьме без света — пока ничего. */
+    public double darkDelay = 30;
+    /**
+     * Потом стресс растёт: сначала столько ед./с, через {@link #darkRamp} секунд — {@link #darkRateMax}. По умолчанию
+     * спокойный человек (рассудок в норме) к пятой минуте во тьме доходит до паники.
+     */
+    public double darkRate = 0.3;
+    public double darkRateMax = 0.85;
+    public double darkRamp = 270;
     /** Свет у игрока рядом (в этом радиусе) светит и тебе. */
     public double darkFriendLight = 6;
     /**
@@ -125,6 +128,13 @@ public final class Settings {
     public double foodRelief = 2;
     public double foodReliefMax = 8;
     public double foodCooldown = 300;
+
+    // ---------------------------------------------------------------- дрожь
+    /** Дрожь рук от стресса (с 60, на панике ещё и уводит взгляд): общая сила, 1 — как в 0.1.0. */
+    public double tremorScale = 0.5;
+    /** Храбрый — дрожь ×, Трусливый — ×. */
+    public double tremorBrave = 0.6;
+    public double tremorCoward = 1.4;
 
     // ---------------------------------------------------------------- рассудок
     /** Стресс выше порога съедает рассудок: при стрессе 100 — столько % в час. */

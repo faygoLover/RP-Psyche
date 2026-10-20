@@ -19,8 +19,9 @@ public final class Tremor {
         if (p == null || mc.isPaused()) return;
         float stress = ClientPsyche.stress();
         double t = System.nanoTime() / 1.0e9;
-        float shake = (float) Psyche.ramp(stress, 60, 100) * 0.9f;
-        float drift = (float) Psyche.ramp(stress, 80, 100) * 1.6f;
+        float k = ClientPsyche.tremor();
+        float shake = (float) Psyche.ramp(stress, 60, 100) * 0.9f * k;
+        float drift = (float) Psyche.ramp(stress, 80, 100) * 1.6f * k;
         float yaw = 0, pitch = 0;
         if ((shake > 0 || drift > 0) && mc.screen == null && ClientPsyche.active()) {
             yaw = shake * (float) (Math.sin(t * 47.0) * 0.5 + Math.sin(t * 29.3 + 1.7) * 0.5)

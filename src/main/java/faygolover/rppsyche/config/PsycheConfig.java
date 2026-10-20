@@ -103,6 +103,12 @@ public final class PsycheConfig {
         bind(b, d, "foodCooldown", "Откат еды, секунд онлайна.");
         b.pop();
 
+        b.comment("Дрожь рук от стресса: с 60 мелкая, с 80 ещё и уводит взгляд.").push("tremor");
+        bind(b, d, "tremorScale", "Общая сила дрожи (1 — как в 0.1.0).");
+        bind(b, d, "tremorBrave", "Храбрый: дрожь ×.");
+        bind(b, d, "tremorCoward", "Трусливый: дрожь ×.");
+        b.pop();
+
         b.comment("Рассудок (0–100, 100 — норма): инертный, портится за часы, лечится днями онлайна.").push("sanity");
         bind(b, d, "sanityLossThreshold", "Стресс выше этого съедает рассудок.");
         bind(b, d, "sanityLossPerHour", "При стрессе 100 — столько % в час.");

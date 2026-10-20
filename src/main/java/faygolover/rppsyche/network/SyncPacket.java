@@ -11,7 +11,7 @@ import java.util.function.Supplier;
  * Своя психика клиенту: стресс, рассудок и что сейчас вокруг (флаги). Клиент по ним рисует и звучит; цифры игроку
  * не показываются.
  */
-public record SyncPacket(float stress, float sanity, int flags) {
+public record SyncPacket(float stress, float sanity, int flags, float tremor) {
     /** Полная тьма уже давит; один слишком долго; в Пси-зоне; резкий скачок стресса. */
     public static final int DARK = 1, ALONE = 2, PSI = 4, SPIKE = 8;
 
@@ -19,15 +19,16 @@ public record SyncPacket(float stress, float sanity, int flags) {
         buf.writeFloat(p.stress);
         buf.writeFloat(p.sanity);
         buf.writeByte(p.flags);
+        buf.writeFloat(p.tremor);
     }
 
     public static SyncPacket decode(FriendlyByteBuf buf) {
-        return new SyncPacket(buf.readFloat(), buf.readFloat(), buf.readUnsignedByte());
+        return new SyncPacket(buf.readFloat(), buf.readFloat(), buf.readUnsignedByte(), buf.readFloat());
     }
 
     public static void handle(SyncPacket p, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> () -> faygolover.rppsyche.client.ClientPsyche.onSync(p.stress, p.sanity, p.flags)));
+                () -> () -> faygolover.rppsyche.client.ClientPsyche.onSync(p.stress, p.sanity, p.flags, p.tremor)));
         ctx.get().setPacketHandled(true);
     }
 }

@@ -223,13 +223,24 @@ public final class PsycheService {
         float st = (float) s.stress, sa = (float) s.sanity;
         if (spike) flags |= SyncPacket.SPIKE;
         d.syncAge++;
-        if (spike || flags != d.sentFlags || d.syncAge >= 10 || Math.abs(st - d.sentStress) >= 0.5f || Math.abs(sa - d.sentSanity) >= 0.2f) {
-            Net.send(sp, new SyncPacket(st, sa, flags));
+        float tr = tremor(sp, Settings.get());
+        if (spike || flags != d.sentFlags || d.syncAge >= 10 || Math.abs(st - d.sentStress) >= 0.5f || Math.abs(sa - d.sentSanity) >= 0.2f
+                || tr != d.sentTremor) {
+            Net.send(sp, new SyncPacket(st, sa, flags, tr));
+            d.sentTremor = tr;
             d.sentStress = st;
             d.sentSanity = sa;
             d.sentFlags = flags & ~SyncPacket.SPIKE;
             d.syncAge = 0;
         }
+    }
+
+    /** Сила дрожи рук: настройка × черты (Храбрый — меньше, Трусливый — больше). */
+    private static float tremor(ServerPlayer sp, Settings c) {
+        double k = c.tremorScale;
+        if (RpCoreAPI.hasTrait(sp, RpIds.COWARD)) k *= c.tremorCoward;
+        else if (RpCoreAPI.hasTrait(sp, RpIds.BRAVE)) k *= c.tremorBrave;
+        return (float) Math.max(0, k);
     }
 
     /** Строка ощущений мода тела: держится там 8 секунд — обновляем каждые 4. */

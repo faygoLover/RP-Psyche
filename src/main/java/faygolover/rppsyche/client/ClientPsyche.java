@@ -16,13 +16,16 @@ public final class ClientPsyche {
     /** Прислал сервер. */
     static float stress, sanity = 100;
     static int flags;
+    /** Сила дрожи рук (настройка сервера × черты). */
+    static float tremor = 0.5f;
     /** Плавно идут к присланным. */
     static float shownStress, shownSanity = 100;
     /** Вспышка прожилок от резкого скачка стресса (1 → 0). */
     static float spike;
 
-    public static void onSync(float st, float sa, int f) {
+    public static void onSync(float st, float sa, int f, float tr) {
         stress = st;
+        tremor = tr;
         sanity = sa;
         boolean wasDark = (flags & SyncPacket.DARK) != 0, wasAlone = (flags & SyncPacket.ALONE) != 0;
         flags = f & ~SyncPacket.SPIKE;
@@ -59,6 +62,10 @@ public final class ClientPsyche {
 
     public static float sanity() {
         return active() ? shownSanity : 100;
+    }
+
+    public static float tremor() {
+        return tremor;
     }
 
     public static int sanityStage() {
