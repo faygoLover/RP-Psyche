@@ -1,0 +1,11 @@
+{
+  "heartbeat": { "category": "player", "sounds": [ "rppsyche:heartbeat" ] },
+  "hum": { "category": "ambient", "sounds": [ "rppsyche:insanity1" ] },
+  "whoosh": { "category": "ambient", "subtitle": "subtitles.rppsyche.whoosh", "sounds": [ "rppsyche:whoosh" ] },
+  "distant_shot": {
+    "category": "player",
+    "subtitle": "subtitles.rppsyche.distant_shot",
+    "sounds": [ "rppsyche:distant_ak47", "rppsyche:distant_awp", "rppsyche:distant_glock17", "rppsyche:distant_kar98",
+                "rppsyche:distant_m249", "rppsyche:distant_m4a1" ]
+  }
+}
