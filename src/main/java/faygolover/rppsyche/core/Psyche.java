@@ -10,8 +10,11 @@ public final class Psyche {
 
     /** Что действует на человека в эту секунду. */
     public static final class Inputs {
-        /** Постоянные источники стресса, ед./с (тьма, боль, одиночество…). */
+        /** Постоянные источники стресса, ед./с (боль, одиночество…). */
         public double stressRate;
+        /** Источник, который поднимает стресс только до {@link #cappedLimit} (тьма), ед./с. */
+        public double cappedRate;
+        public double cappedLimit = 100;
         /** Разовые толчки (выстрел, взрыв, удар). */
         public double impulse;
         /** Разовое облегчение (сон, еда). */
@@ -41,11 +44,16 @@ public final class Psyche {
 
         double sanityK = 1 + c.sanityStressGain * (1 - s.sanity / 100.0);
         double gain = (Math.max(0, in.stressRate) * dt + flow) * Math.max(0, in.gainMul) * sanityK;
-        boolean pressed = in.stressRate > 1e-3 || flow > 1e-3;
+        boolean pressed = in.stressRate > 1e-3 || in.cappedRate > 1e-3 || flow > 1e-3;
         double decay = c.stressDecay * Math.max(0, in.decayMul) * (pressed ? c.stressDecayWhilePressed : 1) * dt;
 
         double floor = (100 - s.sanity) * c.stressFloor;
         double next = s.stress + gain - decay - Math.max(0, in.relief);
+        // Ограниченный источник (тьма) дотягивает только до своей отметки: выше не поднимает, но и спасть не даёт.
+        if (in.cappedRate > 0 && next < in.cappedLimit) {
+            double cg = in.cappedRate * dt * Math.max(0, in.gainMul) * sanityK;
+            next = Math.min(in.cappedLimit, next + cg);
+        }
         // Пол: ниже не спадает, а снизу к нему тянет медленно.
         if (next < floor) next = Math.min(floor, Math.max(next, s.stress) + c.stressFloorRise * dt);
         s.stress = clamp(next);

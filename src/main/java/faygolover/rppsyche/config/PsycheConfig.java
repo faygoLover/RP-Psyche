@@ -42,6 +42,7 @@ public final class PsycheConfig {
         bind(b, d, "darkRate", "Потом стресс растёт со столько ед./с…");
         bind(b, d, "darkRateMax", "…и через dark_ramp секунд — со столько.");
         bind(b, d, "darkRamp", "За сколько секунд рост доходит до наибольшего.");
+        bind(b, d, "darkStressCap", "Выше этой отметки тьма стресс не поднимает (дрожь — с 60).");
         bind(b, d, "darkFriendLight", "Свет у игрока рядом (в этом радиусе) светит и тебе.");
         bind(b, d, "lightItems", "Что светит в руках: id предмета или id{ключ} — тогда только если в NBT предмета ключ включён"
                 + " (фонари). Плюс тег предметов rppsyche:light_sources.");

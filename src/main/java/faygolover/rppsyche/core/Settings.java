@@ -40,12 +40,14 @@ public final class Settings {
     /** Сколько секунд во тьме без света — пока ничего. */
     public double darkDelay = 30;
     /**
-     * Потом стресс растёт: сначала столько ед./с, через {@link #darkRamp} секунд — {@link #darkRateMax}. По умолчанию
-     * спокойный человек (рассудок в норме) к пятой минуте во тьме доходит до паники.
+     * Потом стресс растёт: сначала столько ед./с, через {@link #darkRamp} секунд — {@link #darkRateMax}. Выше
+     * {@link #darkStressCap} тьма не поднимает: к ней спокойный человек подходит минуты за три с половиной.
      */
     public double darkRate = 0.3;
     public double darkRateMax = 0.85;
     public double darkRamp = 270;
+    /** Выше этой отметки тьма стресс не поднимает (дрожь — с 60): напряжён, но не паникует. */
+    public double darkStressCap = 50;
     /** Свет у игрока рядом (в этом радиусе) светит и тебе. */
     public double darkFriendLight = 6;
     /**

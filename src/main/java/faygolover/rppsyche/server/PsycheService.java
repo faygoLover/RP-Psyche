@@ -117,7 +117,10 @@ public final class PsycheService {
         if (Lights.inTotalDarkness(sp, c)) s.darkSeconds += 1;
         else s.darkSeconds = 0;
         boolean darkPress = s.darkSeconds > c.darkDelay;
-        if (darkPress) in.stressRate += lerp(c.darkRate, c.darkRateMax, Psyche.ramp(s.darkSeconds - c.darkDelay, 0, c.darkRamp));
+        if (darkPress) {
+            in.cappedRate = lerp(c.darkRate, c.darkRateMax, Psyche.ramp(s.darkSeconds - c.darkDelay, 0, c.darkRamp));
+            in.cappedLimit = c.darkStressCap;
+        }
 
         // Люди вокруг: одиночество, компания, заразность, разговор.
         boolean alone = true, company = false, calmNear = false, panicNear = false, talkTogether = false;
