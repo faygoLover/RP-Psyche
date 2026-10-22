@@ -58,7 +58,7 @@ public final class Settings {
             "minecraft:torch", "minecraft:soul_torch", "minecraft:lantern", "minecraft:soul_lantern",
             "minecraft:redstone_torch", "minecraft:glowstone", "minecraft:jack_o_lantern", "minecraft:sea_lantern",
             "minecraft:shroomlight", "minecraft:glow_berries", "minecraft:lava_bucket",
-            "sa_combat:flashlight{on}", "powered_flashlight:flashlight{active}");
+            "sa_combat:flashlight{FlashlightOn}");
 
     // ---------------------------------------------------------------- одиночество
     /** Один — значит, нет живого игрока (не креатив и не наблюдатель) в этом радиусе. */
