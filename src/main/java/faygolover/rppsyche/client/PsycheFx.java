@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.PostPass;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Что видно: мир выцветает и становится контрастнее (стресс, плохой рассудок), цвета расходятся к краям (с
@@ -53,6 +54,9 @@ final class PsycheFx {
             close();
         } finally {
             main.bindWrite(true);
+            // Проход идёт уже в интерфейсе, после того как игра очистила глубину: blit пишет в неё 0.6 на весь
+            // экран, и предметы в слотах, rphud — всё, что рисуется с проверкой глубины, — пропадали. Очищаем снова.
+            RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
         }
