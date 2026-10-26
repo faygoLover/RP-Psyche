@@ -429,10 +429,15 @@ public final class PsycheService {
     /** Выпивка и курево по общей базе RP Core; без мода питания — ещё и ванильная еда (1 ед. сытости ≈ 50 ккал). */
     public static void onUseFinish(LivingEntityUseItemEvent.Finish e) {
         if (!(e.getEntity() instanceof ServerPlayer sp)) return;
-        substances(sp, faygolover.rpcore.api.Consumables.forItem(e.getItem()), 1);
         if (RpCoreAPI.nutrition() != null) return;
         FoodProperties food = e.getItem().getFoodProperties(sp);
         if (food != null) ate(sp, food.getNutrition() * 50.0);
+    }
+
+    /** Выпивка и курево долей (RP Core: глоток, укус или целиком). */
+    public static void onConsume(faygolover.rpcore.api.event.RpConsumeEvent e) {
+        if (e.getEntity() instanceof ServerPlayer sp && e.fraction() > 0)
+            substances(sp, faygolover.rpcore.api.Consumables.forItem(e.stack()), e.fraction());
     }
 
     /** Сигарета без «допивания» (ПКМ). */

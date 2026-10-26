@@ -58,6 +58,7 @@ public class RpPsyche {
         bus.addListener(PsycheService::onFoodEaten);
         bus.addListener(PsycheService::onUseFinish);
         bus.addListener(PsycheService::onRightClick);
+        bus.addListener(PsycheService::onConsume);
         bus.addListener(PsycheService::onEffectAdded);
         bus.addListener(PsycheService::onEntityInteract);
         bus.addListener(PsycheService::onMood);
