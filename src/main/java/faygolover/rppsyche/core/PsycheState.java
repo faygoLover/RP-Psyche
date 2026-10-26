@@ -16,6 +16,17 @@ public final class PsycheState {
     public double ateAt = -1e9;
     public double panicAt = -1e9;
     public double selfTalkAt = -1e9;
+    /** По {@link #clock}: последняя сигарета, выпивка, сообщение с КПК, погладил животное. */
+    public double smokedAt = -1e9;
+    public double drankAt = -1e9;
+    public double messagedAt = -1e9;
+    public double pettedAt = -1e9;
+    /** Время мира ({@code dayTime}) последней беседы с психологом и записи в дневнике — откаты в RP-часах. */
+    public long therapyAt = Long.MIN_VALUE;
+    public long diaryAt = Long.MIN_VALUE;
+    /** RP-сутки ({@code dayTime / 24000}) и сколько рассудка за них дали музыка и настолки — дневной потолок. */
+    public long leisureDay = -1;
+    public double leisureToday;
 
     public void copyFrom(PsycheState o) {
         stress = o.stress;
@@ -28,5 +39,13 @@ public final class PsycheState {
         ateAt = o.ateAt;
         panicAt = o.panicAt;
         selfTalkAt = o.selfTalkAt;
+        smokedAt = o.smokedAt;
+        drankAt = o.drankAt;
+        messagedAt = o.messagedAt;
+        pettedAt = o.pettedAt;
+        therapyAt = o.therapyAt;
+        diaryAt = o.diaryAt;
+        leisureDay = o.leisureDay;
+        leisureToday = o.leisureToday;
     }
 }

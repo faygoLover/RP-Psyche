@@ -10,6 +10,7 @@ import faygolover.rppsyche.RpPsyche;
 import faygolover.rppsyche.capability.PsycheData;
 import faygolover.rppsyche.core.Psyche;
 import faygolover.rppsyche.core.PsycheState;
+import faygolover.rppsyche.core.Settings;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -30,6 +31,8 @@ public final class PsycheCommands {
         RpCoreAPI.registerCommand(RpPsyche.MODID, "/rppsyche get <игрок>", "rppsyche.cmd.get", 2, false);
         RpCoreAPI.registerCommand(RpPsyche.MODID, "/rppsyche set <игроки> stress|sanity <0–100>", "rppsyche.cmd.set", 2, false);
         RpCoreAPI.registerCommand(RpPsyche.MODID, "/rppsyche add <игроки> stress|sanity <число>", "rppsyche.cmd.add", 2, false);
+        RpCoreAPI.registerCommand(RpPsyche.MODID, "/rppsyche pause <игроки> [минут]", "rppsyche.cmd.pause", 2, false);
+        RpCoreAPI.registerCommand(RpPsyche.MODID, "/rppsyche resume <игроки>", "rppsyche.cmd.resume", 2, false);
     }
 
     public static void register(RegisterCommandsEvent e) {
@@ -47,6 +50,12 @@ public final class PsycheCommands {
             }
             root.then(branch.then(targets));
         }
+        root.then(Commands.literal("pause").then(Commands.argument("targets", EntityArgument.players())
+                .executes(ctx -> pause(ctx, Settings.get().pauseDefaultMinutes))
+                .then(Commands.argument("minutes", DoubleArgumentType.doubleArg(0.1, 1440))
+                        .executes(ctx -> pause(ctx, DoubleArgumentType.getDouble(ctx, "minutes"))))));
+        root.then(Commands.literal("resume").then(Commands.argument("targets", EntityArgument.players())
+                .executes(ctx -> pause(ctx, 0))));
         d.register(root);
     }
 
@@ -60,6 +69,24 @@ public final class PsycheCommands {
                 Component.translatable("rppsyche.stage." + Psyche.sanityStage(s.sanity)),
                 (int) s.darkSeconds, (int) (s.aloneSeconds / 60)), false);
         return 1;
+    }
+
+    /** Пауза ГМа на {@code minutes} (0 — снять): психика стоит, эффекты у игрока выключены. */
+    private static int pause(CommandContext<CommandSourceStack> ctx, double minutes) throws CommandSyntaxException {
+        Collection<ServerPlayer> players = EntityArgument.getPlayers(ctx, "targets");
+        int n = 0;
+        for (ServerPlayer p : players) {
+            PsycheData data = PsycheData.get(p);
+            if (data == null) continue;
+            data.pausedUntil = minutes <= 0 ? 0 : System.currentTimeMillis() + (long) (minutes * 60_000);
+            PsycheService.resync(p);
+            n++;
+        }
+        int count = n;
+        String m = String.format(Locale.ROOT, "%.0f", minutes);
+        ctx.getSource().sendSuccess(() -> minutes <= 0 ? Component.translatable("rppsyche.cmd.resumed", count)
+                : Component.translatable("rppsyche.cmd.paused", count, m), true);
+        return n;
     }
 
     private static int change(CommandContext<CommandSourceStack> ctx, Scale scale, boolean add) throws CommandSyntaxException {

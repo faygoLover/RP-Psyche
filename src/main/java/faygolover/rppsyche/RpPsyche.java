@@ -40,6 +40,8 @@ public class RpPsyche {
         var modBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, PsycheConfig.SPEC);
         PsycheSounds.SOUNDS.register(modBus);
+        faygolover.rppsyche.registry.PsycheItems.ITEMS.register(modBus);
+        modBus.addListener(faygolover.rppsyche.registry.PsycheItems::onCreativeTab);
         modBus.addListener(this::commonSetup);
         modBus.addListener(this::registerCaps);
         modBus.addListener(this::onConfig);
@@ -55,6 +57,12 @@ public class RpPsyche {
         bus.addListener(PsycheService::onWake);
         bus.addListener(PsycheService::onFoodEaten);
         bus.addListener(PsycheService::onUseFinish);
+        bus.addListener(PsycheService::onRightClick);
+        bus.addListener(PsycheService::onEffectAdded);
+        bus.addListener(PsycheService::onEntityInteract);
+        bus.addListener(PsycheService::onMood);
+        bus.addListener(faygolover.rppsyche.server.Therapy::onServerTick);
+        bus.addListener(faygolover.rppsyche.server.Therapy::onLogout);
         bus.addListener(PsycheService::onClone);
         bus.addListener(PsycheService::onLogin);
         bus.addListener(PsycheService::onRespawn);

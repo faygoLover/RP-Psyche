@@ -139,6 +139,56 @@ public final class PsycheConfig {
         bind(b, d, "selfTalkLoss", "…рассудок минус столько.");
         b.pop();
 
+        b.comment("Пауза ГМа (/rppsyche pause): психика стоит, эффекты выключены.").push("pause");
+        bind(b, d, "pauseDefaultMinutes", "Без указанного времени — на столько минут.");
+        b.pop();
+
+        b.comment("Курение и выпивка: что считается — общая база RP Core (rpcore/consumables).").push("substances");
+        bind(b, d, "nicotineRelief", "Никотин: стресс − столько за дозу 1 (сигарета; Tobacconist — 0.4).");
+        bind(b, d, "nicotineCooldown", "Повтор раньше стольких секунд — доля облегчения.");
+        bind(b, d, "smokerCraveDelay", "Курильщик (черта) без курева столько секунд онлайна — стресс растёт.");
+        bind(b, d, "smokerCraveRate", "…со столько ед./с.");
+        bind(b, d, "alcoholRelief", "Алкоголь: стресс − столько за дозу 1 (пиво; вино 1.5, крепкое 2), сразу, без отката.");
+        bind(b, d, "alcoholCooldown", "Повтор раньше стольких секунд — доля облегчения.");
+        b.pop();
+
+        b.comment("События настроения от других модов (КПК, еда).").push("mood");
+        bind(b, d, "messageAloneForget", "Написал с КПК — одиночество отступает на столько секунд.");
+        bind(b, d, "messageCooldown", "Не чаще раза в столько секунд.");
+        bind(b, d, "fedContentRelief", "«Сыт и доволен» (RP Culinary) — стресс −.");
+        bind(b, d, "favouriteRelief", "Любимая еда — стресс − за порцию.");
+        bind(b, d, "dislikedStress", "Нелюбимая еда — толчок стресса + за порцию.");
+        b.pop();
+
+        b.comment("Антипсихотик (RP Medicine, галоперидол).").push("antipsychotic");
+        bind(b, d, "antipsychoticSuppress", "Сила эффекта не ниже этого — галлюцинации приглушены.");
+        bind(b, d, "antipsychoticSanityPerHour", "Рассудок + % в час × сила.");
+        b.pop();
+
+        b.comment("Журнал психолога: беседа с пациентом.").push("therapy");
+        bind(b, d, "therapySeconds", "Беседа длится столько секунд.");
+        bind(b, d, "therapyCheckSeconds", "Раз в столько секунд проверяется, что оба рядом.");
+        bind(b, d, "therapyRadius", "Рядом — не дальше стольких блоков.");
+        bind(b, d, "therapySanity", "Итог: рассудок +.");
+        bind(b, d, "therapyRelief", "Итог: стресс −.");
+        bind(b, d, "therapySkill", "Нужен навык «Медицина» не ниже (RP Perks; без него — любой).");
+        bind(b, d, "therapyJournalCooldown", "Откат журнала, секунд.");
+        bind(b, d, "therapyPatientTicks", "Откат пациента, тиков времени мира (12000 — 12 RP-часов).");
+        b.pop();
+
+        b.comment("Досуг: то, что держит рассудок.").push("leisure");
+        bind(b, d, "petSanity", "Погладить своё животное пустой рукой: рассудок +.");
+        bind(b, d, "petCooldown", "Откат, секунд.");
+        bind(b, d, "diaryMinChars", "Дневник: дописал в книге столько знаков…");
+        bind(b, d, "diarySanity", "…рассудок +.");
+        bind(b, d, "diaryCooldownTicks", "Не чаще раза в столько тиков времени мира (24000 — RP-сутки).");
+        bind(b, d, "musicRadius", "Музыка (Immersive Melodies): слышно в этом радиусе.");
+        bind(b, d, "musicSanityPerHour", "Играешь или слушаешь — рассудок + % в час.");
+        bind(b, d, "gameRadius", "Настольная игра (Table Top Craft): у доски — не дальше стольких блоков.");
+        bind(b, d, "gameSanityPerHour", "Ты и ещё кто-то у одной доски — рассудок + % в час.");
+        bind(b, d, "leisureDailyCap", "Музыка и настолки вместе — не больше столько рассудка за RP-сутки.");
+        b.pop();
+
         b.comment("Речь.").push("speech");
         bind(b, d, "stutterFrom", "Заикание в речи и КПК — со стресса.");
         b.pop();

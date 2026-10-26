@@ -174,6 +174,68 @@ public final class Settings {
     public double selfTalkWindow = 120;
     public double selfTalkLoss = 1.5;
 
+    // ---------------------------------------------------------------- пауза ГМа
+    /** {@code /rppsyche pause} без времени — на столько минут. */
+    public double pauseDefaultMinutes = 10;
+
+    // ---------------------------------------------------------------- курение и выпивка (общая база RP Core)
+    /** Никотин: стресс − столько за дозу 1 (сигарета; Tobacconist — 0.4 дозы); повтор раньше отката — доля. */
+    public double nicotineRelief = 10;
+    public double nicotineCooldown = 300;
+    /** Курильщик (черта) без курева столько секунд онлайна — стресс понемногу растёт. */
+    public double smokerCraveDelay = 1800;
+    public double smokerCraveRate = 0.08;
+    /** Алкоголь: стресс − столько за дозу 1 (кружка пива; вино 1.5, крепкое 2) сразу, без отката; повтор — доля. */
+    public double alcoholRelief = 6;
+    public double alcoholCooldown = 120;
+
+    // ---------------------------------------------------------------- события настроения (RP Core RpMoodEvent)
+    /** Написал с КПК — счётчик одиночества − столько секунд; не чаще отката. */
+    public double messageAloneForget = 120;
+    public double messageCooldown = 30;
+    /** «Сыт и доволен» (RP Culinary) — стресс −. */
+    public double fedContentRelief = 15;
+    /** Любимая еда — стресс − (за порцию), нелюбимая — толчок стресса +. */
+    public double favouriteRelief = 5;
+    public double dislikedStress = 4;
+
+    // ---------------------------------------------------------------- антипсихотик (RP Medicine, галоперидол)
+    /** Пока действует (сила ≥ этого) — галлюцинации приглушены (экран и звуки как при здоровом рассудке). */
+    public double antipsychoticSuppress = 0.5;
+    /** И рассудок + столько % в час × сила. */
+    public double antipsychoticSanityPerHour = 6;
+
+    // ---------------------------------------------------------------- журнал психолога
+    /** Беседа длится столько секунд; раз в столько секунд проверяется, что оба рядом (не дальше радиуса). */
+    public double therapySeconds = 180;
+    public double therapyCheckSeconds = 10;
+    public double therapyRadius = 6;
+    /** Итог беседы: рассудок +, стресс −. */
+    public double therapySanity = 8;
+    public double therapyRelief = 15;
+    /** Нужен навык «Медицина» не ниже (RP Perks; без него — любой). */
+    public int therapySkill = 4;
+    /** Откат журнала, секунд; откат пациента — тиков времени мира (12000 — 12 RP-часов). */
+    public double therapyJournalCooldown = 600;
+    public long therapyPatientTicks = 12000;
+
+    // ---------------------------------------------------------------- досуг: рассудок
+    /** Погладить своё животное (пустой рукой): рассудок +, откат. */
+    public double petSanity = 0.5;
+    public double petCooldown = 300;
+    /** Дневник: дописал в книге столько знаков — рассудок +; не чаще раза в RP-сутки (тиков времени мира). */
+    public int diaryMinChars = 100;
+    public double diarySanity = 1.5;
+    public long diaryCooldownTicks = 24000;
+    /** Музыка (Immersive Melodies): играешь или слышишь в радиусе — рассудок + % в час. */
+    public double musicRadius = 16;
+    public double musicSanityPerHour = 3;
+    /** Настольная игра (Table Top Craft): ты и ещё кто-то у одной доски — рассудок + % в час. */
+    public double gameRadius = 3;
+    public double gameSanityPerHour = 3;
+    /** Музыка и настолки вместе — не больше столько рассудка за RP-сутки. */
+    public double leisureDailyCap = 6;
+
     // ---------------------------------------------------------------- речь
     /** Заикание в речи и КПК — со стресса. */
     public double stutterFrom = 65;

@@ -14,6 +14,8 @@ import java.util.function.Supplier;
 public record SyncPacket(float stress, float sanity, int flags, float tremor) {
     /** Полная тьма уже давит; один слишком долго; в Пси-зоне; резкий скачок стресса. */
     public static final int DARK = 1, ALONE = 2, PSI = 4, SPIKE = 8;
+    /** Пауза ГМа — эффекты выключены; антипсихотик — галлюцинации приглушены. */
+    public static final int PAUSED = 16, CALMED = 32;
 
     public static void encode(SyncPacket p, FriendlyByteBuf buf) {
         buf.writeFloat(p.stress);

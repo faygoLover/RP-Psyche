@@ -42,6 +42,12 @@ public final class PsycheData {
     public boolean inUtterance;
     public boolean utteranceHeard;
     public final ArrayDeque<Double> unheard = new ArrayDeque<>();
+    /** Пауза ГМа до этого момента (System.currentTimeMillis), 0 — нет. Не сохраняется: выход из игры снимает. */
+    public long pausedUntil;
+    /** Дневник: сколько знаков в книгах было при прошлой записи (-1 — ещё не считали). */
+    public int bookChars = -1;
+    /** Настольная игра идёт до этого момента (по часам психики). */
+    public double gameUntil = -1;
 
     @Nullable
     public static PsycheData get(Player p) {
@@ -61,6 +67,14 @@ public final class PsycheData {
         t.putDouble("ate_at", s.ateAt);
         t.putDouble("panic_at", s.panicAt);
         t.putDouble("self_talk_at", s.selfTalkAt);
+        t.putDouble("smoked_at", s.smokedAt);
+        t.putDouble("drank_at", s.drankAt);
+        t.putDouble("messaged_at", s.messagedAt);
+        t.putDouble("petted_at", s.pettedAt);
+        t.putLong("therapy_at", s.therapyAt);
+        t.putLong("diary_at", s.diaryAt);
+        t.putLong("leisure_day", s.leisureDay);
+        t.putDouble("leisure_today", s.leisureToday);
         t.putBoolean("was_clinical", wasClinical);
         return t;
     }
@@ -77,6 +91,14 @@ public final class PsycheData {
         if (t.contains("ate_at")) s.ateAt = t.getDouble("ate_at");
         if (t.contains("panic_at")) s.panicAt = t.getDouble("panic_at");
         if (t.contains("self_talk_at")) s.selfTalkAt = t.getDouble("self_talk_at");
+        if (t.contains("smoked_at")) s.smokedAt = t.getDouble("smoked_at");
+        if (t.contains("drank_at")) s.drankAt = t.getDouble("drank_at");
+        if (t.contains("messaged_at")) s.messagedAt = t.getDouble("messaged_at");
+        if (t.contains("petted_at")) s.pettedAt = t.getDouble("petted_at");
+        if (t.contains("therapy_at")) s.therapyAt = t.getLong("therapy_at");
+        if (t.contains("diary_at")) s.diaryAt = t.getLong("diary_at");
+        if (t.contains("leisure_day")) s.leisureDay = t.getLong("leisure_day");
+        s.leisureToday = t.getDouble("leisure_today");
         wasClinical = t.getBoolean("was_clinical");
     }
 

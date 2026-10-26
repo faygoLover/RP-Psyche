@@ -45,10 +45,19 @@ public final class PsycheService {
 
     private static boolean zoneArtifacts;
     private static boolean voice;
+    private static boolean melodies;
+    private static boolean tableTop;
 
     public static void init() {
         zoneArtifacts = ModList.get().isLoaded("fl_zone_arts");
         voice = ModList.get().isLoaded("voicechat");
+        melodies = ModList.get().isLoaded("immersive_melodies");
+        tableTop = ModList.get().isLoaded("table_top_craft");
+    }
+
+    /** Пауза ГМа идёт. */
+    public static boolean paused(PsycheData d) {
+        return d.pausedUntil != 0 && System.currentTimeMillis() < d.pausedUntil;
     }
 
     /** Психика действует: живой игрок, не креатив и не наблюдатель. */
@@ -60,7 +69,7 @@ public final class PsycheService {
     public static void impulse(ServerPlayer p, double amount) {
         if (amount <= 0 || !affected(p)) return;
         PsycheData d = PsycheData.get(p);
-        if (d != null) d.impulse += amount;
+        if (d != null && !paused(d)) d.impulse += amount;
     }
 
     // ---------------------------------------------------------------- шаг
@@ -70,6 +79,16 @@ public final class PsycheService {
         if (sp.tickCount % 20 != 0) return;
         PsycheData d = PsycheData.get(sp);
         if (d == null) return;
+        // Пауза ГМа: стресс и рассудок стоят, счётчики заморожены, эффекты у игрока выключены.
+        if (d.pausedUntil != 0) {
+            if (paused(d)) {
+                d.impulse = d.relief = d.sanityHit = d.sanityBoost = 0;
+                sync(sp, d, SyncPacket.PAUSED, false);
+                return;
+            }
+            d.pausedUntil = 0;
+            resync(sp);
+        }
         if (!affected(sp) || !RpCoreAPI.timeRunning()) {
             d.impulse = d.relief = d.sanityHit = d.sanityBoost = 0;
             sync(sp, d, 0, false);
@@ -102,6 +121,14 @@ public final class PsycheService {
             in.decayMul *= 1 + sed / 100;
         }
         if (b.intoxication() > 0) in.decayMul *= 1 + c.alcoholDecay * Math.min(100, b.intoxication()) / 100;
+        // Антипсихотик: рассудок понемногу +, галлюцинации приглушены (флаг клиенту).
+        boolean calmed = b.antipsychotic() >= c.antipsychoticSuppress;
+        if (b.antipsychotic() > 0) d.sanityBoost += c.antipsychoticSanityPerHour / 3600.0 * Math.min(1, b.antipsychotic());
+        // Курильщик без курева — не сразу (ломку Medicine не дублируем).
+        if (RpCoreAPI.hasTrait(sp, RpIds.SMOKER)) {
+            if (s.smokedAt < -1e8) s.smokedAt = s.clock;
+            if (!b.withdrawal() && s.clock - s.smokedAt > c.smokerCraveDelay) in.stressRate += c.smokerCraveRate;
+        }
         boolean clinical = b.down() == 3;
         if (d.wasClinical && !clinical) d.sanityHit += c.clinicalReturnSanity * in.sanityLossMul;
         d.wasClinical = clinical;
@@ -172,6 +199,10 @@ public final class PsycheService {
         // Голос: разговор с собой.
         if (voice) voiceStep(sp, d, c, voiceR, in.sanityLossMul);
 
+        // Досуг: музыка, настольные игры, дневник.
+        leisure(sp, d, c);
+        diary(sp, d, c);
+
         in.impulse = d.impulse;
         in.relief = d.relief;
         in.sanityHit = d.sanityHit;
@@ -185,7 +216,8 @@ public final class PsycheService {
             s.panicAt = s.clock;
         }
 
-        int flags = (darkPress ? SyncPacket.DARK : 0) | (alonePress ? SyncPacket.ALONE : 0) | (psi > 0 ? SyncPacket.PSI : 0);
+        int flags = (darkPress ? SyncPacket.DARK : 0) | (alonePress ? SyncPacket.ALONE : 0) | (psi > 0 ? SyncPacket.PSI : 0)
+                | (calmed ? SyncPacket.CALMED : 0);
         sync(sp, d, flags, s.stress - before >= 8);
         sensations(sp, d);
     }
@@ -217,6 +249,94 @@ public final class PsycheService {
             s.selfTalkAt = s.clock;
             d.unheard.clear();
         }
+    }
+
+    // ---------------------------------------------------------------- досуг
+
+    /** Музыка и настолки: рассудок понемногу +, не больше дневного потолка за RP-сутки. */
+    private static void leisure(ServerPlayer sp, PsycheData d, Settings c) {
+        if (!melodies && !tableTop) return;
+        PsycheState s = d.state;
+        long day = Math.floorDiv(sp.level().getDayTime(), 24000L);
+        if (day != s.leisureDay) {
+            s.leisureDay = day;
+            s.leisureToday = 0;
+        }
+        if (s.leisureToday >= c.leisureDailyCap) return;
+        double gain = 0;
+        if (melodies && hearsMusic(sp, c)) gain += c.musicSanityPerHour / 3600.0;
+        if (tableTop) {
+            if (((long) s.clock) % 5 == 0 && atBoardGame(sp, c)) d.gameUntil = s.clock + 5;
+            if (s.clock < d.gameUntil) gain += c.gameSanityPerHour / 3600.0;
+        }
+        gain = Math.min(gain, c.leisureDailyCap - s.leisureToday);
+        if (gain <= 0) return;
+        d.sanityBoost += gain;
+        s.leisureToday += gain;
+    }
+
+    /** Кто-то в радиусе (или сам) играет на инструменте Immersive Melodies (в NBT предмета {@code playing}). */
+    private static boolean hearsMusic(ServerPlayer sp, Settings c) {
+        double r2 = c.musicRadius * c.musicRadius;
+        for (ServerPlayer o : sp.serverLevel().players()) {
+            if (o.isSpectator() || o.distanceToSqr(sp) > r2) continue;
+            if (playing(o.getMainHandItem()) || playing(o.getOffhandItem())) return true;
+        }
+        return false;
+    }
+
+    private static boolean playing(net.minecraft.world.item.ItemStack st) {
+        if (st.isEmpty() || !st.hasTag()) return false;
+        net.minecraft.resources.ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(st.getItem());
+        return id != null && "immersive_melodies".equals(id.getNamespace()) && st.getTag().getBoolean("playing");
+    }
+
+    /** У доски Table Top Craft рядом стоит ещё кто-то живой — идёт партия. */
+    private static boolean atBoardGame(ServerPlayer sp, Settings c) {
+        ServerLevel level = sp.serverLevel();
+        int r = (int) Math.ceil(c.gameRadius);
+        net.minecraft.core.BlockPos at = sp.blockPosition();
+        double r2 = c.gameRadius * c.gameRadius;
+        for (net.minecraft.core.BlockPos pos : net.minecraft.core.BlockPos.betweenClosed(at.offset(-r, -1, -r), at.offset(r, 1, r))) {
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+            if (be == null) continue;
+            net.minecraft.resources.ResourceLocation type = net.minecraftforge.registries.ForgeRegistries.BLOCK_ENTITY_TYPES.getKey(be.getType());
+            if (type == null || !"table_top_craft".equals(type.getNamespace())) continue;
+            Vec3 centre = Vec3.atCenterOf(pos);
+            for (ServerPlayer o : level.players()) {
+                if (o != sp && affected(o) && o.distanceToSqr(centre) <= r2) return true;
+            }
+        }
+        return false;
+    }
+
+    /** Дневник: дописал в книгах не меньше {@link Settings#diaryMinChars} знаков — рассудок +, раз в RP-сутки. */
+    private static void diary(ServerPlayer sp, PsycheData d, Settings c) {
+        PsycheState s = d.state;
+        if (((long) s.clock) % 10 != 0) return;
+        int chars = bookChars(sp);
+        if (d.bookChars < 0 || chars < d.bookChars) {
+            d.bookChars = chars;
+            return;
+        }
+        if (chars - d.bookChars < c.diaryMinChars) return;
+        long day = sp.level().getDayTime();
+        if (s.diaryAt != Long.MIN_VALUE && day >= s.diaryAt && day - s.diaryAt < c.diaryCooldownTicks) return;
+        d.sanityBoost += c.diarySanity;
+        s.diaryAt = day;
+        d.bookChars = chars;
+    }
+
+    /** Знаков в книгах с пером и подписанных книгах в инвентаре. */
+    private static int bookChars(ServerPlayer sp) {
+        int n = 0;
+        for (net.minecraft.world.item.ItemStack st : sp.getInventory().items) {
+            if (!(st.is(net.minecraft.world.item.Items.WRITABLE_BOOK) || st.is(net.minecraft.world.item.Items.WRITTEN_BOOK)) || !st.hasTag())
+                continue;
+            net.minecraft.nbt.ListTag pages = st.getTag().getList("pages", net.minecraft.nbt.Tag.TAG_STRING);
+            for (int i = 0; i < pages.size(); i++) n += pages.getString(i).length();
+        }
+        return n;
     }
 
     // ---------------------------------------------------------------- клиент и ощущения
@@ -306,11 +426,79 @@ public final class PsycheService {
         if (e.getEntity() instanceof ServerPlayer sp) ate(sp, e.kcal());
     }
 
-    /** Без мода питания — ванильная еда (1 ед. сытости ≈ 50 ккал). */
+    /** Выпивка и курево по общей базе RP Core; без мода питания — ещё и ванильная еда (1 ед. сытости ≈ 50 ккал). */
     public static void onUseFinish(LivingEntityUseItemEvent.Finish e) {
-        if (RpCoreAPI.nutrition() != null || !(e.getEntity() instanceof ServerPlayer sp)) return;
+        if (!(e.getEntity() instanceof ServerPlayer sp)) return;
+        substances(sp, faygolover.rpcore.api.Consumables.forItem(e.getItem()), 1);
+        if (RpCoreAPI.nutrition() != null) return;
         FoodProperties food = e.getItem().getFoodProperties(sp);
         if (food != null) ate(sp, food.getNutrition() * 50.0);
+    }
+
+    /** Сигарета без «допивания» (ПКМ). */
+    public static void onRightClick(net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem e) {
+        if (e.getEntity() instanceof ServerPlayer sp) substances(sp, faygolover.rpcore.api.Consumables.forClick(e.getItemStack().getItem()), 1);
+    }
+
+    /** Наложенный эффект (никотин Tobacconist): уровень эффекта — доза больше на 50 % за уровень. */
+    public static void onEffectAdded(net.minecraftforge.event.entity.living.MobEffectEvent.Added e) {
+        if (!(e.getEntity() instanceof ServerPlayer sp)) return;
+        int amp = Math.max(0, e.getEffectInstance().getAmplifier());
+        substances(sp, faygolover.rpcore.api.Consumables.forEffect(e.getEffectInstance().getEffect()), 1 + 0.5 * amp);
+    }
+
+    /** Никотин и алкоголь снимают часть стресса сразу (алкоголь — без отката потом); повтор раньше отката — доля. */
+    private static void substances(ServerPlayer sp, @javax.annotation.Nullable faygolover.rpcore.api.Consumables.Entry x, double scale) {
+        if (x == null || !affected(sp)) return;
+        PsycheData d = PsycheData.get(sp);
+        if (d == null || paused(d)) return;
+        Settings c = Settings.get();
+        PsycheState s = d.state;
+        if (x.nicotine() > 0) {
+            d.relief += c.nicotineRelief * x.nicotine() * scale * Psyche.cooldownShare(s.clock, s.smokedAt, c.nicotineCooldown);
+            s.smokedAt = s.clock;
+        }
+        if (x.alcohol() > 0) {
+            d.relief += c.alcoholRelief * x.alcohol() * scale * Psyche.cooldownShare(s.clock, s.drankAt, c.alcoholCooldown);
+            s.drankAt = s.clock;
+        }
+    }
+
+    /** Погладить своё животное пустой рукой — рассудок немного +. */
+    public static void onEntityInteract(net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteract e) {
+        if (!(e.getEntity() instanceof ServerPlayer sp) || e.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND
+                || !sp.getMainHandItem().isEmpty() || !affected(sp)) return;
+        Entity t = e.getTarget();
+        boolean own = t instanceof net.minecraft.world.entity.TamableAnimal ta && ta.isTame() && sp.getUUID().equals(ta.getOwnerUUID())
+                || t instanceof net.minecraft.world.entity.animal.horse.AbstractHorse h && h.isTamed() && sp.getUUID().equals(h.getOwnerUUID());
+        if (!own) return;
+        PsycheData d = PsycheData.get(sp);
+        if (d == null || paused(d)) return;
+        Settings c = Settings.get();
+        PsycheState s = d.state;
+        if (s.clock - s.pettedAt < c.petCooldown) return;
+        s.pettedAt = s.clock;
+        d.sanityBoost += c.petSanity;
+    }
+
+    /** События настроения от других модов (RP Core): КПК, еда. */
+    public static void onMood(faygolover.rpcore.api.event.RpMoodEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer sp) || !affected(sp)) return;
+        PsycheData d = PsycheData.get(sp);
+        if (d == null || paused(d)) return;
+        Settings c = Settings.get();
+        PsycheState s = d.state;
+        double k = Math.max(0, e.strength());
+        switch (e.kind()) {
+            case MESSAGE_SENT -> {
+                if (s.clock - s.messagedAt < c.messageCooldown) return;
+                s.messagedAt = s.clock;
+                s.aloneSeconds = Math.max(0, s.aloneSeconds - c.messageAloneForget);
+            }
+            case FED_CONTENT -> d.relief += c.fedContentRelief * k;
+            case FAVOURITE_FOOD -> d.relief += c.favouriteRelief * k;
+            case DISLIKED_FOOD -> impulse(sp, c.dislikedStress * k);
+        }
     }
 
     private static void ate(ServerPlayer sp, double kcal) {
@@ -349,10 +537,16 @@ public final class PsycheService {
 
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) {
         VoiceTracker.forget(e.getEntity().getUUID());
+        PsycheData d = PsycheData.get(e.getEntity());
+        if (d != null) {
+            d.pausedUntil = 0;
+            d.bookChars = -1;
+        }
     }
 
     public static void onServerStopped(ServerStoppedEvent e) {
         VoiceTracker.clear();
+        Therapy.clear();
     }
 
     /** Отправить клиенту заново при следующем шаге (вход, смена мира, команда). */

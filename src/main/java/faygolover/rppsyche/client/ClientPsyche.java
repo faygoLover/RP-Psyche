@@ -28,7 +28,12 @@ public final class ClientPsyche {
         tremor = tr;
         sanity = sa;
         boolean wasDark = (flags & SyncPacket.DARK) != 0, wasAlone = (flags & SyncPacket.ALONE) != 0;
+        boolean wasPaused = (flags & SyncPacket.PAUSED) != 0;
         flags = f & ~SyncPacket.SPIKE;
+        if (!wasPaused && (flags & SyncPacket.PAUSED) != 0) {
+            PhantomSounds.stop();
+            Thoughts.clear();
+        }
         if (!known) {
             shownStress = st;
             shownSanity = sa;
@@ -53,15 +58,17 @@ public final class ClientPsyche {
     /** Психика сейчас действует на своего игрока (сервер прислал, не креатив и не наблюдатель). */
     public static boolean active() {
         LocalPlayer p = Minecraft.getInstance().player;
-        return known && p != null && p.isAlive() && !p.isCreative() && !p.isSpectator();
+        return known && p != null && p.isAlive() && !p.isCreative() && !p.isSpectator() && (flags & SyncPacket.PAUSED) == 0;
     }
 
     public static float stress() {
         return active() ? shownStress : 0;
     }
 
+    /** Рассудок для эффектов. Антипсихотик приглушает галлюцинации — как у здорового (стадия 0). */
     public static float sanity() {
-        return active() ? shownSanity : 100;
+        if (!active()) return 100;
+        return (flags & SyncPacket.CALMED) != 0 ? Math.max(shownSanity, 85) : shownSanity;
     }
 
     public static float tremor() {
