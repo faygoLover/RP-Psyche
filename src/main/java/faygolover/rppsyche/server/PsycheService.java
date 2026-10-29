@@ -522,6 +522,9 @@ public final class PsycheService {
             case FED_CONTENT -> d.relief += c.fedContentRelief * k;
             case FAVOURITE_FOOD -> d.relief += c.favouriteRelief * k;
             case DISLIKED_FOOD -> impulse(sp, c.dislikedStress * k);
+            // RP Needs: кошмар — стресс; выспался в нормальном месте — немного отпускает.
+            case NIGHTMARE -> impulse(sp, c.nightmareStress * k);
+            case RESTED -> d.relief += c.restedRelief * k;
         }
     }
 

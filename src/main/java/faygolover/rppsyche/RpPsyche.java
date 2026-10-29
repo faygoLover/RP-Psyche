@@ -80,6 +80,11 @@ public class RpPsyche {
         e.enqueueWork(() -> {
             PsycheService.init();
             RpCoreAPI.registerModule(MODID, "психика: стресс и рассудок");
+            // Рассудок — для модов семейства (RP Needs: кошмары чаще при низком рассудке).
+            RpCoreAPI.registerSanity(p -> {
+                var d = PsycheData.get(p);
+                return d == null ? 100 : d.state.sanity;
+            });
             RpCoreAPI.registerSpeechFilter(new ResourceLocation(MODID, "stutter"), PsycheService::filterSpeech);
             PsycheCommands.describe();
         });

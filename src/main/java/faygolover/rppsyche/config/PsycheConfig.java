@@ -158,6 +158,8 @@ public final class PsycheConfig {
         bind(b, d, "fedContentRelief", "«Сыт и доволен» (RP Culinary) — стресс −.");
         bind(b, d, "favouriteRelief", "Любимая еда — стресс − за порцию.");
         bind(b, d, "dislikedStress", "Нелюбимая еда — толчок стресса + за порцию.");
+        bind(b, d, "nightmareStress", "RP Needs: приснился кошмар — толчок стресса +.");
+        bind(b, d, "restedRelief", "RP Needs: выспался в кровати или на койке — стресс −.");
         b.pop();
 
         b.comment("Антипсихотик (RP Medicine, галоперидол).").push("antipsychotic");
