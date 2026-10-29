@@ -51,6 +51,7 @@ public class RpPsyche {
         bus.addGenericListener(Entity.class, this::attachCaps);
         bus.addListener(PsycheCommands::register);
         bus.addListener(PsycheService::onPlayerTick);
+        bus.addListener(PsycheService::onTimeSkip);
         // Удар читаем раньше всех: RP Medicine потом превращает урон в травмы.
         bus.addListener(EventPriority.HIGHEST, PsycheService::onHurt);
         bus.addListener(PsycheService::onExplosion);

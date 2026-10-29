@@ -97,6 +97,25 @@ public final class PsycheService {
         step(sp, d, Settings.get());
     }
 
+    /**
+     * Прокрутка времени RP ({@code /rptime skip|sleep}, ускоренная ночь RP Time): прошедшее время — спокойное. Стресс
+     * спадает, рассудок отходит, часы психики идут (курильщик потом захочет курить). Источники стресса за прокрутку не
+     * копятся — после неё всё считается вживую. Пауза ГМа — ничего.
+     */
+    public static void onTimeSkip(faygolover.rpcore.api.event.RpTimeSkipEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer sp) || e.scope() != faygolover.rpcore.api.event.RpTimeSkipEvent.Scope.ALL) return;
+        PsycheData d = PsycheData.get(sp);
+        if (d == null || paused(d) || !affected(sp)) return;
+        Settings c = Settings.get();
+        double left = Math.min(e.seconds(), 7 * 86400.0);
+        while (left > 0) {
+            double dt = Math.min(60, left);
+            Psyche.step(d.state, new Psyche.Inputs(), c, dt);
+            left -= dt;
+        }
+        sync(sp, d, 0, false);
+    }
+
     private static void step(ServerPlayer sp, PsycheData d, Settings c) {
         PsycheState s = d.state;
         Psyche.Inputs in = new Psyche.Inputs();
