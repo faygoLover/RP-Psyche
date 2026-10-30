@@ -430,6 +430,8 @@ public final class PsycheService {
 
     public static void onWake(PlayerWakeUpEvent e) {
         if (!(e.getEntity() instanceof ServerPlayer sp) || !affected(sp) || sp.getSleepTimer() < 100) return;
+        // С RP Needs лечь — не значит уснуть: сон засчитывает он (RESTED по тому, сколько проспал).
+        if (net.minecraftforge.fml.ModList.get().isLoaded("rpneeds")) return;
         PsycheData d = PsycheData.get(sp);
         if (d == null) return;
         Settings c = Settings.get();
@@ -524,7 +526,10 @@ public final class PsycheService {
             case DISLIKED_FOOD -> impulse(sp, c.dislikedStress * k);
             // RP Needs: кошмар — стресс; выспался в нормальном месте — немного отпускает.
             case NIGHTMARE -> impulse(sp, c.nightmareStress * k);
-            case RESTED -> d.relief += c.restedRelief * k;
+            case RESTED -> {
+                d.relief += c.restedRelief * k;
+                d.sanityBoost += c.sleepSanity * k;
+            }
         }
     }
 
