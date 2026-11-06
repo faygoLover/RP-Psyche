@@ -31,6 +31,8 @@ public final class Psyche {
         public double sanityHit;
         /** Разовая прибавка рассудка (сон). */
         public double sanityBoost;
+        /** Время тела для потери и восстановления рассудка: 1 — нынешние числа (3-часовые сутки), 0 — пауза. */
+        public double sanityTime = 1;
     }
 
     /** Шаг на {@code dt} секунд. Возвращает true, если стресс только что дошёл до пика паники. */
@@ -64,11 +66,11 @@ public final class Psyche {
         double loss = 0;
         if (s.stress > c.sanityLossThreshold) {
             double share = (s.stress - c.sanityLossThreshold) / Math.max(1e-6, 100 - c.sanityLossThreshold);
-            loss += share * c.sanityLossPerHour / 3600.0 * dt * Math.max(0, in.sanityLossMul);
+            loss += share * c.sanityLossPerHour / 3600.0 * dt * Math.max(0, in.sanityTime) * Math.max(0, in.sanityLossMul);
         }
         loss += Math.max(0, in.sanityDrain) + Math.max(0, in.sanityHit);
         double boost = Math.max(0, in.sanityBoost);
-        if (s.stress < c.sanityRecoverBelow && loss <= 0) boost += c.sanityRecoverPerHour / 3600.0 * dt;
+        if (s.stress < c.sanityRecoverBelow && loss <= 0) boost += c.sanityRecoverPerHour / 3600.0 * dt * Math.max(0, in.sanityTime);
         s.sanity = clamp(s.sanity - loss + boost);
 
         s.clock += dt;

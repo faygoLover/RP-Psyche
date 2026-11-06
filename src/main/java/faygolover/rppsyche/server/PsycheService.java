@@ -44,6 +44,8 @@ public final class PsycheService {
     private PsycheService() {}
 
     private static boolean zoneArtifacts;
+    /** Когда бывшего зависимого последний раз тянуло (игровое время). */
+    private static final java.util.Map<UUID, Long> FORMER_CRAVE = new java.util.HashMap<>();
     private static boolean voice;
     private static boolean melodies;
     private static boolean tableTop;
@@ -143,11 +145,20 @@ public final class PsycheService {
         // Антипсихотик: рассудок понемногу +, галлюцинации приглушены (флаг клиенту).
         boolean calmed = b.antipsychotic() >= c.antipsychoticSuppress;
         if (b.antipsychotic() > 0) d.sanityBoost += c.antipsychoticSanityPerHour / 3600.0 * Math.min(1, b.antipsychotic());
-        // Курильщик без курева — не сразу (ломку Medicine не дублируем).
-        if (RpCoreAPI.hasTrait(sp, RpIds.SMOKER)) {
-            if (s.smokedAt < -1e8) s.smokedAt = s.clock;
-            if (!b.withdrawal() && s.clock - s.smokedAt > c.smokerCraveDelay) in.stressRate += c.smokerCraveRate;
+        // Тяга зависимого (любое вещество, по Medicine): до ломки и после острой фазы — понемногу (ломку не дублируем).
+        if (b.craving() && !b.withdrawal()) in.stressRate += c.smokerCraveRate;
+        // Бывший зависимый под сильным стрессом — «сейчас бы выпить». Без штрафов, повод для отыгрыша.
+        if (b.former() != null && s.stress >= c.formerCraveStress) {
+            Long last = FORMER_CRAVE.get(id);
+            long now = level.getGameTime();
+            if (last == null || now - last >= c.formerCraveCooldown * 20) {
+                FORMER_CRAVE.put(id, now);
+                sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("rppsyche.crave_former." + b.former())
+                        .withStyle(net.minecraft.ChatFormatting.GRAY, net.minecraft.ChatFormatting.ITALIC), true);
+            }
         }
+        // Время тела (RP Core): рассудок теряется и возвращается по RP-времени.
+        in.sanityTime = RpCoreAPI.bodyScale() / 8.0;
         boolean clinical = b.down() == 3;
         if (d.wasClinical && !clinical) d.sanityHit += c.clinicalReturnSanity * in.sanityLossMul;
         d.wasClinical = clinical;
@@ -580,6 +591,7 @@ public final class PsycheService {
 
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) {
         VoiceTracker.forget(e.getEntity().getUUID());
+        FORMER_CRAVE.remove(e.getEntity().getUUID());
         PsycheData d = PsycheData.get(e.getEntity());
         if (d != null) {
             d.pausedUntil = 0;

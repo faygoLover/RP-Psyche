@@ -195,9 +195,11 @@ public final class Settings {
     /** Никотин: стресс − столько за дозу 1 (сигарета; Tobacconist — 0.4 дозы); повтор раньше отката — доля. */
     public double nicotineRelief = 10;
     public double nicotineCooldown = 300;
-    /** Курильщик (черта) без курева столько секунд онлайна — стресс понемногу растёт. */
-    public double smokerCraveDelay = 1800;
+    /** Тяга зависимого (Medicine, любое вещество): за полсуток до ломки и после острой фазы стресс понемногу растёт. */
     public double smokerCraveRate = 0.08;
+    /** Бывший зависимый: со стольки стресса — «сейчас бы…» (раз в столько секунд). */
+    public double formerCraveStress = 70;
+    public double formerCraveCooldown = 1200;
     /** Алкоголь: стресс − столько за дозу 1 (кружка пива; вино 1.5, крепкое 2) сразу, без отката; повтор — доля. */
     public double alcoholRelief = 6;
     public double alcoholCooldown = 120;

@@ -152,8 +152,9 @@ public final class PsycheConfig {
         b.comment("Курение и выпивка: что считается — общая база RP Core (rpcore/consumables).").push("substances");
         bind(b, d, "nicotineRelief", "Никотин: стресс − столько за дозу 1 (сигарета; Tobacconist — 0.4).");
         bind(b, d, "nicotineCooldown", "Повтор раньше стольких секунд — доля облегчения.");
-        bind(b, d, "smokerCraveDelay", "Курильщик (черта) без курева столько секунд онлайна — стресс растёт.");
-        bind(b, d, "smokerCraveRate", "…со столько ед./с.");
+        bind(b, d, "smokerCraveRate", "Тяга зависимого (RP Medicine, любое вещество; до ломки и после острой фазы): стресс + столько ед./с.");
+        bind(b, d, "formerCraveStress", "Бывший зависимый: со стольки стресса тянет к веществу (только строка, без штрафов).");
+        bind(b, d, "formerCraveCooldown", "…не чаще раза в столько секунд.");
         bind(b, d, "alcoholRelief", "Алкоголь: стресс − столько за дозу 1 (пиво; вино 1.5, крепкое 2), сразу, без отката.");
         bind(b, d, "alcoholCooldown", "Повтор раньше стольких секунд — доля облегчения.");
         b.pop();

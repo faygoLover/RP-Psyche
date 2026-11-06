@@ -98,5 +98,11 @@
   "rppsyche.thought.s4.2": "ЗАМОЛЧИ",
   "rppsyche.thought.s4.3": "Раз. Два. Три. Раз. Два. Три.",
   "rppsyche.thought.s4.4": "Я ЗДЕСЬ. Я ЗДЕСЬ. Я ЗДЕСЬ.",
-  "rppsyche.thought.s4.5": "ВЫЙДИ ИЗ МОЕЙ ГОЛОВЫ"
+  "rppsyche.thought.s4.5": "ВЫЙДИ ИЗ МОЕЙ ГОЛОВЫ",
+  "rppsyche.crave_former.alcohol": "Сейчас бы выпить...",
+  "rppsyche.crave_former.nicotine": "Сейчас бы закурить...",
+  "rppsyche.crave_former.caffeine": "Сейчас бы кофе...",
+  "rppsyche.crave_former.opioid": "Вспоминается доза...",
+  "rppsyche.crave_former.benzo": "Сейчас бы таблетку...",
+  "rppsyche.crave_former.stimulant": "Сейчас бы взбодриться..."
 }
