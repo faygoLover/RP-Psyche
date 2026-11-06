@@ -192,7 +192,11 @@ public final class PsycheService {
         if (alone) s.aloneSeconds += 1;
         else s.aloneSeconds = Math.max(0, s.aloneSeconds - c.aloneForget);
         boolean alonePress = s.aloneSeconds > c.aloneDelay;
-        if (alonePress) in.stressRate += lerp(c.aloneRate, c.aloneRateMax, Psyche.ramp(s.aloneSeconds - c.aloneDelay, 0, c.aloneRamp));
+        // Одиночество, как и тьма, давит только до своей отметки; вместе — до общей.
+        if (alonePress) {
+            in.cappedRate += lerp(c.aloneRate, c.aloneRateMax, Psyche.ramp(s.aloneSeconds - c.aloneDelay, 0, c.aloneRamp));
+            in.cappedLimit = darkPress ? c.darkAloneCap : c.aloneStressCap;
+        }
         if (panicNear) in.stressRate += c.contagionRate;
         if (calmNear) in.gainMul *= c.calmNearbyGain;
         if (talkTogether) in.decayMul *= c.voiceCompanyDecay;
@@ -216,7 +220,7 @@ public final class PsycheService {
         }
 
         // Голос: разговор с собой.
-        if (voice) voiceStep(sp, d, c, voiceR, in.sanityLossMul);
+        if (voice) voiceStep(sp, d, c, in.sanityLossMul);
 
         // Досуг: музыка, настольные игры, дневник.
         leisure(sp, d, c);
@@ -241,17 +245,23 @@ public final class PsycheService {
         sensations(sp, d);
     }
 
-    /** Фраза кончилась и её никто не слышал — в счёт; несколько подряд за окно — рассудок минус. */
-    private static void voiceStep(ServerPlayer sp, PsycheData d, Settings c, double voiceR, double lossMul) {
+    /**
+     * Фраза кончилась и её никто не слышал — в счёт; несколько подряд за окно — рассудок минус, не чаще отката.
+     * «Слышал» — голос реально дошёл до живого игрока (рядом, в группе, на любой дальности Simple Voice Chat) или
+     * говорит в рацию.
+     */
+    private static void voiceStep(ServerPlayer sp, PsycheData d, Settings c, double lossMul) {
         PsycheState s = d.state;
         UUID id = sp.getUUID();
         if (VoiceTracker.talking(id, c.voiceUtteranceGapMs)) {
-            double r = voiceR * (VoiceTracker.whispering(id) ? c.voiceWhisperFactor : 1);
-            boolean heard = false;
-            for (ServerPlayer o : sp.serverLevel().players()) {
-                if (o != sp && affected(o) && o.distanceToSqr(sp) <= r * r) {
-                    heard = true;
-                    break;
+            boolean heard = Radios.holds(sp, c);
+            if (!heard) {
+                for (UUID r : VoiceTracker.receivers(id, c.voiceUtteranceGapMs)) {
+                    ServerPlayer o = sp.server.getPlayerList().getPlayer(r);
+                    if (o != null && affected(o)) {
+                        heard = true;
+                        break;
+                    }
                 }
             }
             d.inUtterance = true;
@@ -264,8 +274,10 @@ public final class PsycheService {
         }
         while (!d.unheard.isEmpty() && s.clock - d.unheard.peekFirst() > c.selfTalkWindow) d.unheard.pollFirst();
         if (d.unheard.size() >= Math.max(1, c.selfTalkCount)) {
-            d.sanityHit += c.selfTalkLoss * lossMul;
-            s.selfTalkAt = s.clock;
+            if (s.clock - s.selfTalkAt >= c.selfTalkCooldown) {
+                d.sanityHit += c.selfTalkLoss * lossMul;
+                s.selfTalkAt = s.clock;
+            }
             d.unheard.clear();
         }
     }
@@ -395,7 +407,6 @@ public final class PsycheService {
         if (s.stress >= 55) body.sensation(sp, "rppsyche.sense.anxious");
         if (s.stress >= 65) body.sensation(sp, "rppsyche.sense.tremor");
         if (s.sanity <= 40) body.sensation(sp, "rppsyche.sense.someone");
-        else if (s.sanity <= 60) body.sensation(sp, "rppsyche.sense.seeing");
     }
 
     // ---------------------------------------------------------------- речь

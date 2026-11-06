@@ -112,6 +112,9 @@ public final class Therapy {
             if (done >= c.therapySeconds) {
                 PsycheData pd = PsycheData.get(pat);
                 if (pd != null) {
+                    // Заключение — только врачу, в чат: записать в медкарту.
+                    doc.sendSystemMessage(Component.translatable(PsycheStatus.conclusion(pd.state), pat.getDisplayName())
+                            .withStyle(ChatFormatting.AQUA));
                     pd.sanityBoost += c.therapySanity;
                     pd.relief += c.therapyRelief;
                     pd.state.therapyAt = pat.level().getDayTime();

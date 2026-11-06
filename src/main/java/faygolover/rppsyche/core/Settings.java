@@ -22,12 +22,17 @@ public final class Settings {
     public double stressDecay = 0.8;
     /** Пока что-то давит, спад слабее: множитель. */
     public double stressDecayWhilePressed = 0.25;
+    /**
+     * Спад растёт с самим стрессом: + k × стресс ед./с. Слабые источники дают умеренный устойчивый стресс, до паники
+     * доводят только сильные (бой, боль, Пси-зона).
+     */
+    public double stressLeak = 0.004;
     /** Толчки (выстрел, взрыв, удар) входят в стресс не сразу: такая доля накопленного за секунду. */
     public double impulseFlow = 0.25;
     /** Плохой рассудок ускоряет рост стресса: ×(1 + k × (1 − рассудок/100)). */
     public double sanityStressGain = 0.6;
     /** «Пол» стресса от плохого рассудка: (100 − рассудок) × k — ниже не спадает. */
-    public double stressFloor = 0.35;
+    public double stressFloor = 0.25;
     /** Пол поднимает стресс медленно: ед./с. */
     public double stressFloorRise = 0.2;
     /** Трусливый — рост стресса ×, Храбрый (и Волевой) — ×. */
@@ -64,10 +69,14 @@ public final class Settings {
     /** Один — значит, нет живого игрока (не креатив и не наблюдатель) в этом радиусе. */
     public double aloneRadius = 32;
     /** Сколько секунд одному — пока ничего. */
-    public double aloneDelay = 600;
-    public double aloneRate = 0.08;
-    public double aloneRateMax = 0.25;
+    public double aloneDelay = 900;
+    public double aloneRate = 0.15;
+    public double aloneRateMax = 0.45;
     public double aloneRamp = 1200;
+    /** Выше этой отметки одиночество стресс не поднимает: не по себе, но без сердцебиения. */
+    public double aloneStressCap = 45;
+    /** Один и в полной тьме — вместе поднимают до этой отметки. */
+    public double darkAloneCap = 60;
     /** Рядом люди — счётчик одиночества тает с такой скоростью (с/с). */
     public double aloneForget = 5;
 
@@ -140,11 +149,11 @@ public final class Settings {
 
     // ---------------------------------------------------------------- рассудок
     /** Стресс выше порога съедает рассудок: при стрессе 100 — столько % в час. */
-    public double sanityLossThreshold = 60;
-    public double sanityLossPerHour = 20;
+    public double sanityLossThreshold = 70;
+    public double sanityLossPerHour = 10;
     /** Стресс ниже этого — рассудок восстанавливается: % в час. */
-    public double sanityRecoverBelow = 25;
-    public double sanityRecoverPerHour = 3;
+    public double sanityRecoverBelow = 35;
+    public double sanityRecoverPerHour = 5;
     /** Пик паники (стресс дошёл до этого) — рассудок −; не чаще отката. */
     public double panicPeak = 95;
     public double panicPeakLoss = 1;
@@ -161,18 +170,22 @@ public final class Settings {
     public double psiSuggestible = 1.6;
 
     // ---------------------------------------------------------------- голос (Simple Voice Chat)
-    /** Радиус голоса, блоков; 0 — как в Simple Voice Chat. */
+    /** Радиус голоса для двустороннего разговора, блоков; 0 — как в Simple Voice Chat. */
     public double voiceRadius = 0;
-    /** Шёпот слышно на такой доле радиуса. */
-    public double voiceWhisperFactor = 0.5;
     /** Разговор двусторонний, если оба говорили за последние столько секунд. */
     public double voiceTwoWayWindow = 20;
     /** Фраза кончилась, если тишина дольше, мс. */
     public long voiceUtteranceGapMs = 1200;
-    /** Разговор с собой: столько фраз подряд никто не услышал за окно — рассудок −. */
-    public int selfTalkCount = 3;
-    public double selfTalkWindow = 120;
-    public double selfTalkLoss = 1.5;
+    /**
+     * Разговор с собой: столько фраз подряд никто не услышал за окно — рассудок −, не чаще отката. «Услышал» — голос
+     * Simple Voice Chat реально дошёл до живого игрока (рядом или в группе) или в руке рация.
+     */
+    public int selfTalkCount = 5;
+    public double selfTalkWindow = 180;
+    public double selfTalkLoss = 0.5;
+    public double selfTalkCooldown = 600;
+    /** Рации: говорит в такую (предмет в руке) — говорит с кем-то, а не сам с собой. */
+    public List<String> voiceRadioItems = List.of("simpleradio:transceiver", "simpleradio:walkie_talkie", "simpleradio:spuddie_talkie");
 
     // ---------------------------------------------------------------- пауза ГМа
     /** {@code /rppsyche pause} без времени — на столько минут. */

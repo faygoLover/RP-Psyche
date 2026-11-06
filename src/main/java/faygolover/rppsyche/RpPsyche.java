@@ -86,6 +86,8 @@ public class RpPsyche {
                 return d == null ? 100 : d.state.sanity;
             });
             RpCoreAPI.registerSpeechFilter(new ResourceLocation(MODID, "stutter"), PsycheService::filterSpeech);
+            // Признаки психики в осмотре RP Medicine: со стороны — только видимое, ГМу — цифры.
+            faygolover.rpcore.api.StatusLines.register(faygolover.rppsyche.server.PsycheStatus.INSTANCE);
             PsycheCommands.describe();
         });
     }

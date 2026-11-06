@@ -3,12 +3,14 @@
 Мод Minecraft Forge 1.20.1 (Java 17): стресс и рассудок, аддон к RP Medicine. Замена Sanity: Descent Into Madness
 (`sanitydim`). Автор — faygoLover (Alex). **С автором общаемся по-русски.**
 
-Мод `rppsyche`, «RP Psyche», пакет `faygolover.rppsyche`, MIT, языки ru и en. Требует **RP Core 0.7.1+** и **RP
+Мод `rppsyche`, «RP Psyche», пакет `faygolover.rppsyche`, MIT, языки ru и en. Требует **RP Core 0.11.0+** и **RP
 Medicine 0.8.1+**; RP Perks (черты), RP PDA (речь), TaCZ, Simple Voice Chat, Zone Artifacts — мягко.
 
 ## Состояние
 - План, решения автора и этапы — `docs/00_plan.md` (§12 — решения, §11 — этапы, «Этап 1 — как сделано»).
 - **20.10.2026, 0.1.0 — этап 1 (ядро).** В игре не проверено.
+- **06.11.2026, 0.3.0 — баланс (одиночество с потолком, равновесие стресса, честный разговор с собой) и признаки в
+  осмотре Medicine.** Разбор — `docs/01_review_2026-11-06.md`. В игре не проверено, в сборку не положено.
 - Разбор Sanity (декомпиляция) — `_mcref/mods/sanitydim-1.1.0`.
 
 ## Сборка
