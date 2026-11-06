@@ -35,7 +35,7 @@ public final class Settings {
     public double stressFloor = 0.25;
     /** Пол поднимает стресс медленно: ед./с. */
     public double stressFloorRise = 0.2;
-    /** Трусливый — рост стресса ×, Храбрый (и Волевой) — ×. */
+    /** Трусливый — рост стресса ×, Храбрый — × (Волевой с RP Perks 2.8.1 — только рассудок). */
     public double cowardGain = 1.3;
     public double braveGain = 0.75;
 
