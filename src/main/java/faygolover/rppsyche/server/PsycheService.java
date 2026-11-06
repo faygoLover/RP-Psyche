@@ -153,7 +153,9 @@ public final class PsycheService {
             long now = level.getGameTime();
             if (last == null || now - last >= c.formerCraveCooldown * 20) {
                 FORMER_CRAVE.put(id, now);
-                sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("rppsyche.crave_former." + b.former())
+                int v = sp.getRandom().nextInt(3);
+                sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("rppsyche.crave_former." + b.former()
+                                + (v == 0 ? "" : "." + v))
                         .withStyle(net.minecraft.ChatFormatting.GRAY, net.minecraft.ChatFormatting.ITALIC), true);
             }
         }

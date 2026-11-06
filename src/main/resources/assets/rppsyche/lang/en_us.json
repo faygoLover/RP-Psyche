@@ -104,5 +104,17 @@
   "rppsyche.crave_former.caffeine": "Could use a coffee right now...",
   "rppsyche.crave_former.opioid": "The memory of a dose comes back...",
   "rppsyche.crave_former.benzo": "Could use a pill right now...",
-  "rppsyche.crave_former.stimulant": "Could use a pick-me-up right now..."
+  "rppsyche.crave_former.stimulant": "Could use a pick-me-up right now...",
+  "rppsyche.crave_former.alcohol.1": "A shot would take the edge off...",
+  "rppsyche.crave_former.alcohol.2": "Your hands remember how to hold a glass...",
+  "rppsyche.crave_former.nicotine.1": "One cigarette and it would ease...",
+  "rppsyche.crave_former.nicotine.2": "You want a drag, like before...",
+  "rppsyche.crave_former.caffeine.1": "A cup of strong coffee would fix this...",
+  "rppsyche.crave_former.caffeine.2": "You want coffee to pull yourself together...",
+  "rppsyche.crave_former.opioid.1": "One dose and all this would go away...",
+  "rppsyche.crave_former.opioid.2": "Your body remembers how easy it was...",
+  "rppsyche.crave_former.benzo.1": "One pill and it would let go...",
+  "rppsyche.crave_former.benzo.2": "You crave that even calm...",
+  "rppsyche.crave_former.stimulant.1": "Just once and you'd have strength for anything...",
+  "rppsyche.crave_former.stimulant.2": "You want that rush..."
 }
