@@ -109,7 +109,8 @@ public final class PsycheService {
         PsycheData d = PsycheData.get(sp);
         if (d == null || paused(d) || !affected(sp)) return;
         Settings c = Settings.get();
-        double left = Math.min(e.seconds(), 7 * 86400.0);
+        // Шаг считается «как при 3-часовых сутках»; секунды события — по длине суток без /time speed.
+        double left = Math.min(e.seconds() * 10800.0 / RpCoreAPI.dayLengthSeconds(), 7 * 86400.0);
         while (left > 0) {
             double dt = Math.min(60, left);
             Psyche.step(d.state, new Psyche.Inputs(), c, dt);
@@ -193,11 +194,15 @@ public final class PsycheService {
             double d2 = o.distanceToSqr(sp);
             if (d2 <= aloneR2) alone = false;
             if (d2 <= compR2 && !MedicineCompat.isDown(o)) company = true;
-            if (d2 <= contR2 && sp.hasLineOfSight(o)) {
+            if (d2 <= contR2) {
+                // Луч — последним: нужен только соседу, который что-то меняет.
                 PsycheData od = PsycheData.get(o);
                 if (od != null) {
-                    if (od.state.stress >= c.panicLevel) panicNear = true;
-                    else if (od.state.stress <= c.calmLevel) calmNear = true;
+                    boolean panic = od.state.stress >= c.panicLevel, calm = !panic && od.state.stress <= c.calmLevel;
+                    if (((panic && !panicNear) || (calm && !calmNear)) && sp.hasLineOfSight(o)) {
+                        if (panic) panicNear = true;
+                        else calmNear = true;
+                    }
                 }
             }
             if (iSpoke && d2 <= voiceR * voiceR && VoiceTracker.spokeWithin(o.getUUID(), twoWay)) talkTogether = true;
