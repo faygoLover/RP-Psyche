@@ -18,6 +18,12 @@ import java.util.ArrayDeque;
 
 /** Психика игрока (сохраняется) и служебное состояние сервера (не сохраняется). */
 public final class PsycheData {
+    /** Секунд подряд холодно или жарко. */
+    public int temperatureSeconds;
+    /** Когда (время игры) последний раз курил: для перекура в компании. */
+    public long smokeTick = Long.MIN_VALUE;
+    /** Секунд, набранных на встречах группы поддержки (до засчитанной встречи). */
+    public int supportSeconds;
     public static final Capability<PsycheData> CAP = CapabilityManager.get(new CapabilityToken<>() {});
     public static final ResourceLocation ID = new ResourceLocation(RpPsyche.MODID, "psyche");
 
@@ -72,6 +78,8 @@ public final class PsycheData {
         t.putDouble("messaged_at", s.messagedAt);
         t.putDouble("petted_at", s.pettedAt);
         t.putLong("therapy_at", s.therapyAt);
+        t.putLong("harm_at", s.harmAt);
+        t.putLong("support_until", s.supportUntil);
         t.putLong("diary_at", s.diaryAt);
         t.putLong("leisure_day", s.leisureDay);
         t.putDouble("leisure_today", s.leisureToday);
@@ -96,6 +104,8 @@ public final class PsycheData {
         if (t.contains("messaged_at")) s.messagedAt = t.getDouble("messaged_at");
         if (t.contains("petted_at")) s.pettedAt = t.getDouble("petted_at");
         if (t.contains("therapy_at")) s.therapyAt = t.getLong("therapy_at");
+        if (t.contains("harm_at")) s.harmAt = t.getLong("harm_at");
+        if (t.contains("support_until")) s.supportUntil = t.getLong("support_until");
         if (t.contains("diary_at")) s.diaryAt = t.getLong("diary_at");
         if (t.contains("leisure_day")) s.leisureDay = t.getLong("leisure_day");
         s.leisureToday = t.getDouble("leisure_today");

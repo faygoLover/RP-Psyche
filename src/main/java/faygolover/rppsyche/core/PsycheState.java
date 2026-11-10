@@ -23,12 +23,18 @@ public final class PsycheState {
     public double pettedAt = -1e9;
     /** Время мира ({@code dayTime}) последней беседы с психологом и записи в дневнике — откаты в RP-часах. */
     public long therapyAt = Long.MIN_VALUE;
+    /** Когда (время мира) последний раз ранил человека. */
+    public long harmAt = Long.MIN_VALUE;
+    /** До какого времени мира действует встреча группы поддержки. */
+    public long supportUntil = Long.MIN_VALUE;
     public long diaryAt = Long.MIN_VALUE;
     /** RP-сутки ({@code dayTime / 24000}) и сколько рассудка за них дали музыка и настолки — дневной потолок. */
     public long leisureDay = -1;
     public double leisureToday;
 
     public void copyFrom(PsycheState o) {
+        harmAt = o.harmAt;
+        supportUntil = o.supportUntil;
         stress = o.stress;
         sanity = o.sanity;
         pending = o.pending;

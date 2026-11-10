@@ -136,7 +136,10 @@ public final class PsycheService {
         if (b.pain() > c.painThreshold) {
             in.stressRate += (b.pain() - c.painThreshold) / Math.max(1, 100 - c.painThreshold) * c.painRate;
         }
-        if (b.withdrawal()) in.stressRate += c.withdrawalRate;
+        // Группа поддержки: после встречи тяга и ломка давят слабее (сама физиология не меняется).
+        boolean supported = supportStep(sp, d, c, b.craving() || b.withdrawal() || b.former() != null);
+        double crave = supported ? c.supportCraveMult : 1;
+        if (b.withdrawal()) in.stressRate += c.withdrawalRate * crave;
         if (b.sedation() > 0) {
             double sed = Math.min(100, b.sedation());
             in.gainMul *= Math.max(0, 1 - c.sedationGainCut * sed / 100);
@@ -147,7 +150,7 @@ public final class PsycheService {
         boolean calmed = b.antipsychotic() >= c.antipsychoticSuppress;
         if (b.antipsychotic() > 0) d.sanityBoost += c.antipsychoticSanityPerHour / 3600.0 * Math.min(1, b.antipsychotic());
         // Тяга зависимого (любое вещество, по Medicine): до ломки и после острой фазы — понемногу (ломку не дублируем).
-        if (b.craving() && !b.withdrawal()) in.stressRate += c.smokerCraveRate;
+        if (b.craving() && !b.withdrawal()) in.stressRate += c.smokerCraveRate * crave;
         // Бывший зависимый под сильным стрессом — «сейчас бы выпить». Без штрафов, повод для отыгрыша.
         if (b.former() != null && s.stress >= c.formerCraveStress) {
             Long last = FORMER_CRAVE.get(id);
@@ -172,6 +175,15 @@ public final class PsycheService {
             if (n.hungerStage(sp) >= 2) in.stressRate += c.hungerRate;
             if (n.thirstStage(sp) >= 2) in.stressRate += c.thirstRate;
         }
+
+        // Недосып (RP Needs) и долгий холод или жара.
+        int sleepStage = RpCoreAPI.sleepStage(sp);
+        if (sleepStage == 2) in.gainMul *= c.sleepStage2Gain;
+        else if (sleepStage >= 3) in.gainMul *= c.sleepStage3Gain;
+        BodyProvider tempBody = RpCoreAPI.body();
+        if (tempBody != null && tempBody.temperatureOffset(sp) != 0) d.temperatureSeconds++;
+        else d.temperatureSeconds = 0;
+        if (d.temperatureSeconds > c.temperatureDelay) in.stressRate += c.temperatureRate;
 
         // Полная тьма — копится, давит не сразу.
         if (Lights.inTotalDarkness(sp, c)) s.darkSeconds += 1;
@@ -510,13 +522,61 @@ public final class PsycheService {
         Settings c = Settings.get();
         PsycheState s = d.state;
         if (x.nicotine() > 0) {
-            d.relief += c.nicotineRelief * x.nicotine() * scale * Psyche.cooldownShare(s.clock, s.smokedAt, c.nicotineCooldown);
+            // Перекур: рядом недавно курил кто-то ещё — отпускает чуть сильнее.
+            double company = smokedNearby(sp, c) ? c.smokeCompanyBonus : 1;
+            d.relief += c.nicotineRelief * x.nicotine() * scale * Psyche.cooldownShare(s.clock, s.smokedAt, c.nicotineCooldown) * company;
             s.smokedAt = s.clock;
+            d.smokeTick = sp.level().getGameTime();
         }
         if (x.alcohol() > 0) {
             d.relief += c.alcoholRelief * x.alcohol() * scale * Psyche.cooldownShare(s.clock, s.drankAt, c.alcoholCooldown);
             s.drankAt = s.clock;
         }
+    }
+
+    private static boolean smokedNearby(ServerPlayer sp, Settings c) {
+        long now = sp.level().getGameTime(), window = (long) (c.smokeCompanyWindow * 20);
+        double r2 = c.smokeCompanyRadius * c.smokeCompanyRadius;
+        for (ServerPlayer o : sp.serverLevel().players()) {
+            if (o == sp || !affected(o) || o.distanceToSqr(sp) > r2) continue;
+            PsycheData od = PsycheData.get(o);
+            if (od != null && od.smokeTick != Long.MIN_VALUE && now - od.smokeTick <= window) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Группа поддержки: зависимый (любое вещество) или бывший зависимый вместе с ещё одним таким и психологом с
+     * журналом в руке — {@link Settings#supportSeconds} в сумме (разошлись и вернулись — время не пропадает), и встреча
+     * засчитана на RP-сутки. Возвращает, действует ли она сейчас.
+     */
+    private static boolean supportStep(ServerPlayer sp, PsycheData d, Settings c, boolean dependent) {
+        PsycheState s = d.state;
+        long day = sp.level().getDayTime();
+        boolean active = s.supportUntil != Long.MIN_VALUE && day < s.supportUntil && s.supportUntil - day <= 24000L;
+        if (!dependent || active) {
+            d.supportSeconds = 0;
+            return active;
+        }
+        boolean psychologist = false, peer = false;
+        double r2 = c.supportRadius * c.supportRadius;
+        for (ServerPlayer o : sp.serverLevel().players()) {
+            if (o == sp || !affected(o) || o.distanceToSqr(sp) > r2) continue;
+            if (o.getMainHandItem().getItem() instanceof faygolover.rppsyche.item.PsychologistJournalItem
+                    || o.getOffhandItem().getItem() instanceof faygolover.rppsyche.item.PsychologistJournalItem) psychologist = true;
+            else {
+                MedicineCompat.Body ob = MedicineCompat.read(o);
+                if (ob.craving() || ob.withdrawal() || ob.former() != null) peer = true;
+            }
+        }
+        if (!psychologist || !peer) return false;
+        if (++d.supportSeconds < c.supportSeconds) return false;
+        d.supportSeconds = 0;
+        s.supportUntil = day + 24000L;
+        BodyProvider body = RpCoreAPI.body();
+        if (body == null || !body.sensation(sp, "rppsyche.sense.support"))
+            sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("rppsyche.sense.support"), true);
+        return true;
     }
 
     /** Погладить своё животное пустой рукой — рассудок немного +. */
@@ -560,6 +620,33 @@ public final class PsycheService {
                 d.sanityBoost += c.sleepSanity * k;
             }
         }
+    }
+
+    /** Своей рукой довёл другого игрока до нокдауна или клиники. Повтор за RP-сутки — слабее. */
+    public static void onHarm(faygolover.rpcore.api.event.RpHarmEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer sp) || !affected(sp)) return;
+        PsycheData d = PsycheData.get(sp);
+        if (d == null || paused(d)) return;
+        Settings c = Settings.get();
+        PsycheState s = d.state;
+        double k = RpCoreAPI.hasTrait(sp, RpIds.PACIFIST) ? c.harmPacifist : RpCoreAPI.hasTrait(sp, RpIds.SOLDIER) ? c.harmSoldier : 1;
+        long now = sp.server.overworld().getDayTime();
+        if (s.harmAt != Long.MIN_VALUE && now >= s.harmAt && now - s.harmAt < 24000L) k *= c.harmRepeat;
+        s.harmAt = now;
+        boolean lethal = e.stage() == faygolover.rpcore.api.event.RpHarmEvent.Stage.LETHAL;
+        d.impulse += (lethal ? c.harmLethalStress : c.harmKnockdownStress) * k;
+        if (lethal) d.sanityHit += c.harmLethalSanity * k;
+    }
+
+    /** Вайп персонажа: психика как у нового. */
+    public static void onWipe(faygolover.rpcore.api.event.RpCharacterWipeEvent e) {
+        PsycheData d = PsycheData.get(e.getEntity());
+        if (d == null) return;
+        d.state.copyFrom(new PsycheState());
+        d.impulse = d.relief = d.sanityHit = d.sanityBoost = 0;
+        d.temperatureSeconds = 0;
+        d.wasClinical = false;
+        resync(e.getEntity());
     }
 
     private static void ate(ServerPlayer sp, double kcal) {

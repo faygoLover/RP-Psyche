@@ -120,6 +120,22 @@ public final class Settings {
     public double clinicalRate = 0.8;
     /** Голод и жажда со второй стадии — ед./с. */
     public double hungerRate = 0.12;
+    public double sleepStage2Gain = 1.2;
+    public double sleepStage3Gain = 1.4;
+    public double temperatureRate = 0.05;
+    public double temperatureDelay = 300;
+    public double harmKnockdownStress = 10;
+    public double harmLethalStress = 25;
+    public double harmLethalSanity = 1;
+    public double harmRepeat = 0.5;
+    public double harmSoldier = 0.5;
+    public double harmPacifist = 2;
+    public double smokeCompanyRadius = 4;
+    public double smokeCompanyWindow = 60;
+    public double smokeCompanyBonus = 1.25;
+    public double supportRadius = 6;
+    public double supportSeconds = 300;
+    public double supportCraveMult = 0.5;
     public double thirstRate = 0.12;
     /** Ломка (алкоголь, кофеин…) — ед./с. */
     public double withdrawalRate = 0.25;

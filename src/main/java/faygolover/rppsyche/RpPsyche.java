@@ -50,6 +50,8 @@ public class RpPsyche {
         var bus = MinecraftForge.EVENT_BUS;
         bus.addGenericListener(Entity.class, this::attachCaps);
         bus.addListener(PsycheCommands::register);
+        bus.addListener(net.minecraftforge.eventbus.api.EventPriority.NORMAL, false, faygolover.rpcore.api.event.RpHarmEvent.class, PsycheService::onHarm);
+        bus.addListener(net.minecraftforge.eventbus.api.EventPriority.NORMAL, false, faygolover.rpcore.api.event.RpCharacterWipeEvent.class, PsycheService::onWipe);
         bus.addListener(PsycheService::onPlayerTick);
         bus.addListener(PsycheService::onTimeSkip);
         // Удар читаем раньше всех: RP Medicine потом превращает урон в травмы.
@@ -84,6 +86,10 @@ public class RpPsyche {
             RpCoreAPI.registerSanity(p -> {
                 var d = PsycheData.get(p);
                 return d == null ? 100 : d.state.sanity;
+            });
+            RpCoreAPI.registerStress(p -> {
+                var d = PsycheData.get(p);
+                return d == null ? 0 : d.state.stress;
             });
             RpCoreAPI.registerSpeechFilter(new ResourceLocation(MODID, "stutter"), PsycheService::filterSpeech);
             // Признаки психики в осмотре RP Medicine: со стороны — только видимое, ГМу — цифры.
