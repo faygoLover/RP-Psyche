@@ -2,6 +2,7 @@ package faygolover.rppsyche.server;
 
 import faygolover.rppsyche.RpPsyche;
 import faygolover.rppsyche.core.Settings;
+import faygolover.rppsyche.integration.CuriosWorn;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -17,7 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Полная тьма: свет у глаз почти ноль и ни у тебя, ни у игрока рядом нет света в руках. Динамический свет (Sodium
+ * Полная тьма: свет у глаз почти ноль и ни у тебя, ни у игрока рядом нет света в руках или надетого в Curios
+ * (налобный фонарь, лампа на поясе). Динамический свет (Sodium
  * Dynamic Lights, лучи фонарей) живёт только у клиента, поэтому сервер смотрит на предметы сам.
  */
 public final class Lights {
@@ -41,7 +43,8 @@ public final class Lights {
     }
 
     public static boolean carriesLight(ServerPlayer p, Settings c) {
-        return isLight(p.getMainHandItem(), c) || isLight(p.getOffhandItem(), c);
+        return isLight(p.getMainHandItem(), c) || isLight(p.getOffhandItem(), c)
+                || CuriosWorn.any(p, s -> isLight(s, c));
     }
 
     private static boolean isLight(ItemStack stack, Settings c) {
