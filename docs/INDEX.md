@@ -1,10 +1,10 @@
 # RP Psyche — указатель кода
 
-Создано `python _family/tools/mapgen.py` 15.11.2026, версия 0.5.1-1.20.1-forge, коммит `3956dde`.
+Создано `python _family/tools/mapgen.py`, версия мода 0.5.1-1.20.1-forge.
 **Руками не править**: пересоздаётся скриптом. Смысл, потоки работы и рецепты — в `docs/MAP.md`.
 Разбор по шаблонам, без компиляции: необычно оформленная регистрация может отсутствовать в списках.
 
-Всего: 31 файлов, 3272 строк Java.
+Всего: 32 файлов, 3438 строк Java.
 
 ## 1. Пакеты
 
@@ -15,6 +15,7 @@
 | `faygolover.rppsyche.client` | 7 | 589 |
 | `faygolover.rppsyche.config` | 1 | 272 |
 | `faygolover.rppsyche.core` | 4 | 503 |
+| `faygolover.rppsyche.gametest` | 1 | 166 |
 | `faygolover.rppsyche.integration` | 4 | 201 |
 | `faygolover.rppsyche.integration.voice` | 2 | 131 |
 | `faygolover.rppsyche.item` | 1 | 47 |
@@ -48,6 +49,9 @@
 - `Settings`, 277 — Все числа психики (черновик плана, docs/00_plan.md).
 - `Stutter`, 55 — Заикание от стресса: начало слова повторяется через дефис («п-п-подожди»), иногда — обрыв «...».
 
+### `faygolover.rppsyche.gametest`
+- `PsycheEdgeTests`, 166 — Края состояния психики: запись и чтение, смерть, возврат из Края, перезаход.
+
 ### `faygolover.rppsyche.integration`
 - `CuriosWorn`, 62 — Надетое в слоты Curios (налобный фонарь, лампа на поясе — RP Lights).
 - `MedicineCompat`, 59 — RP Medicine (обязательный): боль, лежачие, опьянение, седация, ломка.
@@ -77,7 +81,7 @@
 - `Radios`, 37 — Рация в руке (Settings#voiceRadioItems, Simple Radio): голос уходит через неё, а не напрямую игрокам, и Simple Voice Chat не знает, кто услышал.
 - `Therapy`, 155 — Беседа с психологом (журнал психолога).
 
-Классов без описания: 0 из 31.
+Классов без описания: 0 из 32.
 
 ## 3. Подписки на события
 
