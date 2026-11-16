@@ -1,4 +1,9 @@
 import json, sys, os
+# ЗАЩИТА ОТ ЗАПУСКА (16.11.2026): в таблице скрипта нет 18 ключей, которые уже есть в lang — запуск их сотрёт.
+import sys as _guard_sys
+if "--force" not in _guard_sys.argv:
+    raise SystemExit("Скрипт отстал от файлов, которые он перезаписывает: в таблице скрипта нет 18 ключей, которые уже есть в lang — запуск их сотрёт. Сначала сверь; запуск всё равно — с ключом --force.")
+_guard_sys.argv.remove("--force")
 # Переводы RP Psyche: python scripts/gen_lang.py (пишет assets/rppsyche/lang). Руками JSON не править.
 out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources", "assets", "rppsyche", "lang")
 ru = {
