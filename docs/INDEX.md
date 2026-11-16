@@ -4,13 +4,13 @@
 **Руками не править**: пересоздаётся скриптом. Смысл, потоки работы и рецепты — в `docs/MAP.md`.
 Разбор по шаблонам, без компиляции: необычно оформленная регистрация может отсутствовать в списках.
 
-Всего: 31 файлов, 3400 строк Java.
+Всего: 31 файлов, 3405 строк Java.
 
 ## 1. Пакеты
 
 | Пакет | Файлов | Строк |
 |---|---:|---:|
-| `faygolover.rppsyche` | 1 | 114 |
+| `faygolover.rppsyche` | 1 | 119 |
 | `faygolover.rppsyche.capability` | 1 | 132 |
 | `faygolover.rppsyche.client` | 7 | 589 |
 | `faygolover.rppsyche.config` | 1 | 225 |
@@ -26,7 +26,7 @@
 ## 2. Классы
 
 ### `faygolover.rppsyche`
-- `RpPsyche`, 114 — RP Psyche — стресс и рассудок, аддон к RP Medicine (план — docs/00_plan.md).
+- `RpPsyche`, 119 — RP Psyche — стресс и рассудок, аддон к RP Medicine (план — docs/00_plan.md).
 
 ### `faygolover.rppsyche.capability`
 - `PsycheData`, 132 — Психика игрока (сохраняется) и служебное состояние сервера (не сохраняется).
@@ -138,7 +138,7 @@
 
 ## 8. Что берёт из RP Core и что ему даёт
 
-Методы `RpCoreAPI` (сколько вызовов): `MISC_TAB` 1, `SpeechChannel` 1, `body` 6, `bodyRate` 1, `carriesLight` 3, `dayLengthSeconds` 1, `hasTrait` 8, `isSkillManaged` 1, `nutrition` 2, `registerCommand` 5, `registerLight` 1, `registerMind` 1, `registerModule` 1, `registerSanity` 1, `registerSpeechFilter` 1, `registerStress` 1, `skill` 1, `sleepStage` 1, `timeRunning` 1.
+Методы `RpCoreAPI` (сколько вызовов): `MISC_TAB` 1, `SpeechChannel` 1, `body` 6, `bodyRate` 1, `carriesLight` 3, `dayLengthSeconds` 1, `hasTrait` 8, `isSkillManaged` 1, `nutrition` 2, `registerCommand` 5, `registerLight` 1, `registerMind` 1, `registerModule` 1, `registerSanity` 1, `registerSpeechFilter` 1, `registerStress` 1, `reportCompat` 4, `skill` 1, `sleepStage` 1, `timeRunning` 1.
 
 Реализует розетки: Source ← `PsycheStatus`.
 

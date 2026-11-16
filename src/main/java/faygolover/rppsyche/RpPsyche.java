@@ -75,6 +75,11 @@ public class RpPsyche {
         e.enqueueWork(() -> {
             PsycheService.init();
             RpCoreAPI.registerModule(MODID, "психика: стресс и рассудок");
+            // Необязательные интеграции — в общий отчёт RP Core (/rpcore compat).
+            faygolover.rpcore.api.RpCoreAPI.reportCompat(MODID, "rpmedicine");
+            faygolover.rpcore.api.RpCoreAPI.reportCompat(MODID, "tacz");
+            faygolover.rpcore.api.RpCoreAPI.reportCompat(MODID, "voicechat");
+            faygolover.rpcore.api.RpCoreAPI.reportCompat(MODID, "fl_zone_arts");
             // Рассудок — для модов семейства (RP Needs: кошмары чаще при низком рассудке).
             RpCoreAPI.registerSanity(p -> {
                 var d = PsycheData.get(p);
