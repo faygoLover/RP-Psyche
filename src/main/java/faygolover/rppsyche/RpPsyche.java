@@ -77,6 +77,18 @@ public class RpPsyche {
                 var d = PsycheData.get(p);
                 return d == null ? 100 : d.state.sanity;
             });
+            // Через RP Core другие моды давят на психику, не зная о нас (RP Culinary: противная еда).
+            RpCoreAPI.registerMind(new faygolover.rpcore.api.MindProvider() {
+                @Override
+                public void stressImpulse(net.minecraft.server.level.ServerPlayer p, double amount) {
+                    PsycheService.impulse(p, amount);
+                }
+
+                @Override
+                public void sanityHit(net.minecraft.server.level.ServerPlayer p, double amount) {
+                    PsycheService.sanityHit(p, amount);
+                }
+            });
             RpCoreAPI.registerStress(p -> {
                 var d = PsycheData.get(p);
                 return d == null ? 0 : d.state.stress;

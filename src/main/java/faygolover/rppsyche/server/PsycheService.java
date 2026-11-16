@@ -10,7 +10,7 @@ import faygolover.rppsyche.core.Psyche;
 import faygolover.rppsyche.core.PsycheState;
 import faygolover.rppsyche.core.Settings;
 import faygolover.rppsyche.core.Stutter;
-import faygolover.rppsyche.integration.MedicineCompat;
+import faygolover.rppsyche.integration.BodyCompat;
 import faygolover.rppsyche.integration.ZaCompat;
 import faygolover.rppsyche.integration.voice.VoiceTracker;
 import faygolover.rppsyche.network.Net;
@@ -65,6 +65,13 @@ public final class PsycheService {
     /** Психика действует: живой игрок, не креатив и не наблюдатель. */
     public static boolean affected(Player p) {
         return p instanceof ServerPlayer && p.isAlive() && !p.isCreative() && !p.isSpectator();
+    }
+
+    /** Разовый удар по рассудку от других модов (RP Core, {@code MindProvider}) — войдёт на ближайшем шаге. */
+    public static void sanityHit(ServerPlayer p, double amount) {
+        if (amount <= 0 || !affected(p)) return;
+        PsycheData d = PsycheData.get(p);
+        if (d != null) d.sanityHit += amount;
     }
 
     /** Разовый толчок стресса (выстрел, взрыв) — войдёт на ближайшем шаге. */
@@ -132,7 +139,7 @@ public final class PsycheService {
         in.sanityLossMul = willed ? c.willedLoss : suggestible ? c.suggestibleLoss : 1;
 
         // Тело (RP Medicine).
-        MedicineCompat.Body b = MedicineCompat.read(sp);
+        BodyCompat.Body b = BodyCompat.read(sp);
         if (b.pain() > c.painThreshold) {
             in.stressRate += (b.pain() - c.painThreshold) / Math.max(1, 100 - c.painThreshold) * c.painRate;
         }
@@ -205,7 +212,7 @@ public final class PsycheService {
             if (o == sp || !affected(o)) continue;
             double d2 = o.distanceToSqr(sp);
             if (d2 <= aloneR2) alone = false;
-            if (d2 <= compR2 && !MedicineCompat.isDown(o)) company = true;
+            if (d2 <= compR2 && !BodyCompat.isDown(o)) company = true;
             if (d2 <= contR2) {
                 // Луч — последним: нужен только соседу, который что-то меняет.
                 PsycheData od = PsycheData.get(o);
@@ -235,9 +242,9 @@ public final class PsycheService {
         // Лежачие рядом (видно): нокдаун, обморок, клиническая смерть, тело вышедшего.
         double downed = 0;
         AABB box = sp.getBoundingBox().inflate(c.downedRadius);
-        for (Entity e : level.getEntities(sp, box, x -> x instanceof LivingEntity && MedicineCompat.isDown(x))) {
+        for (Entity e : level.getEntities(sp, box, x -> x instanceof LivingEntity && BodyCompat.isDown(x))) {
             if (!sp.hasLineOfSight(e)) continue;
-            downed = Math.max(downed, MedicineCompat.isClinical(e) ? c.clinicalRate : c.downedRate);
+            downed = Math.max(downed, BodyCompat.isClinical(e) ? c.clinicalRate : c.downedRate);
         }
         in.stressRate += downed;
 
@@ -565,7 +572,7 @@ public final class PsycheService {
             if (o.getMainHandItem().getItem() instanceof faygolover.rppsyche.item.PsychologistJournalItem
                     || o.getOffhandItem().getItem() instanceof faygolover.rppsyche.item.PsychologistJournalItem) psychologist = true;
             else {
-                MedicineCompat.Body ob = MedicineCompat.read(o);
+                BodyCompat.Body ob = BodyCompat.read(o);
                 if (ob.craving() || ob.withdrawal() || ob.former() != null) peer = true;
             }
         }

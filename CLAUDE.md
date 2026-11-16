@@ -31,7 +31,7 @@ JDK 17: `JAVA_HOME="C:/Program Files/Eclipse Adoptium/jdk-17.0.14.7-hotspot"`, �
   по-русски. Новое число — поле в `Settings` + строка `bind(...)` здесь.
 - `capability/PsycheData` — психика игрока (NBT) и служебное (толчки до шага, голос, что ушло клиенту).
 - `server/PsycheService` — раз в секунду: тело (боль, ломка, седация, опьянение, клиническая смерть — через
-  `integration/MedicineCompat`), голод и жажда (Core `NutritionProvider`), полная тьма (`Lights`), люди вокруг
+  `integration/BodyCompat` (мод тела RP Core)), голод и жажда (Core `NutritionProvider`), полная тьма (`Lights`), люди вокруг
   (одиночество, компания, заразность, двусторонний разговор), лежачие рядом, Пси-зона, разговор с собой; события —
   урон, взрыв, сон, еда; синхронизация своему клиенту; ощущения в строке Medicine (`BodyProvider.sensation`); фильтр
   речи (заикание) для Core → PDA.

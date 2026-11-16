@@ -82,9 +82,11 @@ def flag = { String name -> (project.findProperty(name) ?: 'false').toString().t
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // Обязательные: RP Core (черты, ощущения, речь, время RP) и RP Medicine (боль, нокдаун, лекарства).
+    // Обязателен только RP Core (черты, ощущения, речь, время RP, мод тела).
     implementation fg.deobf("blank:rpcore:${rpcore_version}")
-    implementation fg.deobf("blank:rpmedicine:${rpmedicine_version}")
+    // RP Medicine — необязательна: боль, нокдаун, лекарства приходят через мод тела RP Core. В разработке стоит,
+    // чтобы тесты и клиент шли как на сервере; проверка без неё: -Pno_medicine=true.
+    if (!flag('no_medicine')) runtimeOnly fg.deobf("blank:rpmedicine:${rpmedicine_version}")
 
     // Необязательные: только для компиляции, код интеграций загружается, лишь когда мод установлен.
     compileOnly fg.deobf("maven.modrinth:timeless-and-classics-zero:${tacz_version}")

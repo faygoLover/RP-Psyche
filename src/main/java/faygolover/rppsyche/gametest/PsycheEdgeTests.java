@@ -162,4 +162,37 @@ public final class PsycheEdgeTests {
         }
         h.succeed();
     }
+
+    /**
+     * Связи через RP Core: другие моды давят на психику через {@code RpCoreAPI.stressImpulse} и {@code sanityHit}
+     * (так делает RP Culinary), а тело психика читает через мод тела — у здорового игрока всё по нулям.
+     */
+    @GameTest(template = T, batch = "psyche_edge_core_links")
+    public static void coreLinks(GameTestHelper h) {
+        ServerPlayer p = player(h);
+        try {
+            PsycheData d = PsycheData.get(p);
+            if (d == null) { h.fail("У игрока нет данных психики"); return; }
+            double impulse = d.impulse, hit = d.sanityHit;
+            if (!faygolover.rpcore.api.RpCoreAPI.stressImpulse(p, 5)) h.fail("RP Core не видит мод психики");
+            faygolover.rpcore.api.RpCoreAPI.sanityHit(p, 2);
+            if (Math.abs(d.impulse - impulse - 5) > 1e-9) h.fail("Толчок стресса через RP Core не дошёл: " + (d.impulse - impulse));
+            if (Math.abs(d.sanityHit - hit - 2) > 1e-9) h.fail("Удар по рассудку через RP Core не дошёл: " + (d.sanityHit - hit));
+            p.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
+            faygolover.rpcore.api.RpCoreAPI.stressImpulse(p, 5);
+            faygolover.rpcore.api.RpCoreAPI.sanityHit(p, 2);
+            if (Math.abs(d.impulse - impulse - 5) > 1e-9 || Math.abs(d.sanityHit - hit - 2) > 1e-9) h.fail("В креативе психика приняла удар");
+            p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+
+            var body = faygolover.rppsyche.integration.BodyCompat.read(p);
+            if (body.pain() != 0 || body.down() != 0 || body.withdrawal() || body.craving() || body.former() != null
+                    || body.intoxication() != 0 || body.sedation() != 0 || body.antipsychotic() != 0)
+                h.fail("У здорового игрока тело говорит психике не «всё спокойно»: " + body);
+            if (faygolover.rppsyche.integration.BodyCompat.isDown(p) || faygolover.rppsyche.integration.BodyCompat.isClinical(p))
+                h.fail("Здоровый игрок считается лежачим");
+        } finally {
+            remove(h, p);
+        }
+        h.succeed();
+    }
 }
