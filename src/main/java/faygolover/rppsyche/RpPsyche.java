@@ -9,12 +9,8 @@ import faygolover.rppsyche.registry.PsycheSounds;
 import faygolover.rppsyche.server.PsycheCommands;
 import faygolover.rppsyche.server.PsycheService;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModList;
@@ -43,12 +39,11 @@ public class RpPsyche {
         faygolover.rppsyche.registry.PsycheItems.ITEMS.register(modBus);
         modBus.addListener(faygolover.rppsyche.registry.PsycheItems::onCreativeTab);
         modBus.addListener(this::commonSetup);
-        modBus.addListener(this::registerCaps);
+        PsycheData.register();
         modBus.addListener(this::onConfig);
         modBus.addListener(this::onConfigReload);
 
         var bus = MinecraftForge.EVENT_BUS;
-        bus.addGenericListener(Entity.class, this::attachCaps);
         bus.addListener(PsycheCommands::register);
         bus.addListener(net.minecraftforge.eventbus.api.EventPriority.NORMAL, false, faygolover.rpcore.api.event.RpHarmEvent.class, PsycheService::onHarm);
         bus.addListener(net.minecraftforge.eventbus.api.EventPriority.NORMAL, false, faygolover.rpcore.api.event.RpCharacterWipeEvent.class, PsycheService::onWipe);
@@ -67,11 +62,6 @@ public class RpPsyche {
         bus.addListener(PsycheService::onMood);
         bus.addListener(faygolover.rppsyche.server.Therapy::onServerTick);
         bus.addListener(faygolover.rppsyche.server.Therapy::onLogout);
-        bus.addListener(PsycheService::onClone);
-        bus.addListener(PsycheService::onLogin);
-        bus.addListener(PsycheService::onRespawn);
-        bus.addListener(PsycheService::onChangeDimension);
-        bus.addListener(PsycheService::onLogout);
         bus.addListener(PsycheService::onServerStopped);
         if (ModList.get().isLoaded("tacz")) faygolover.rppsyche.integration.TaczCompat.register();
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> faygolover.rppsyche.client.ClientSetup.init(modBus));
@@ -96,14 +86,6 @@ public class RpPsyche {
             faygolover.rpcore.api.StatusLines.register(faygolover.rppsyche.server.PsycheStatus.INSTANCE);
             PsycheCommands.describe();
         });
-    }
-
-    private void registerCaps(RegisterCapabilitiesEvent e) {
-        e.register(PsycheData.class);
-    }
-
-    private void attachCaps(AttachCapabilitiesEvent<Entity> e) {
-        if (e.getObject() instanceof Player) e.addCapability(PsycheData.ID, new PsycheData.Provider());
     }
 
     private void onConfig(ModConfigEvent.Loading e) {

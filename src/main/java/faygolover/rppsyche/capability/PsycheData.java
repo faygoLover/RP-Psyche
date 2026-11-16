@@ -1,17 +1,14 @@
 package faygolover.rppsyche.capability;
 
+import faygolover.rpcore.api.data.PlayerStore;
 import faygolover.rppsyche.RpPsyche;
 import faygolover.rppsyche.core.PsycheState;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import net.minecraftforge.common.util.LazyOptional;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
@@ -26,6 +23,26 @@ public final class PsycheData {
     public int supportSeconds;
     public static final Capability<PsycheData> CAP = CapabilityManager.get(new CapabilityToken<>() {});
     public static final ResourceLocation ID = new ResourceLocation(RpPsyche.MODID, "psyche");
+    /** Общий жизненный цикл данных игрока (RP Core). Заполняется в {@link #register()}. */
+    public static PlayerStore<PsycheData> STORE;
+
+    /**
+     * Описать данные для RP Core. Вызывается из конструктора мода. Имя ветки в сохранении — прежнее
+     * ({@code rppsyche:psyche}). Психика переживает и смерть, и возврат из Края; клиенту после входа, возрождения
+     * и смены измерения всё отправляется заново.
+     */
+    public static void register() {
+        STORE = PlayerStore.of(ID, PsycheData.class, CAP, PsycheData::new)
+                .save(PsycheData::save)
+                .load(PsycheData::load)
+                .clone((from, to, ctx) -> {
+                    to.state.copyFrom(from.state);
+                    to.wasClinical = from.wasClinical;
+                })
+                .resync((sp, why) -> faygolover.rppsyche.server.PsycheService.resync(sp))
+                .forget(faygolover.rppsyche.server.PsycheService::forget)
+                .register();
+    }
 
     public final PsycheState state = new PsycheState();
 
@@ -110,25 +127,5 @@ public final class PsycheData {
         if (t.contains("leisure_day")) s.leisureDay = t.getLong("leisure_day");
         s.leisureToday = t.getDouble("leisure_today");
         wasClinical = t.getBoolean("was_clinical");
-    }
-
-    public static final class Provider implements ICapabilitySerializable<CompoundTag> {
-        private final PsycheData data = new PsycheData();
-        private final LazyOptional<PsycheData> opt = LazyOptional.of(() -> data);
-
-        @Override
-        public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-            return CAP.orEmpty(cap, opt);
-        }
-
-        @Override
-        public CompoundTag serializeNBT() {
-            return data.save();
-        }
-
-        @Override
-        public void deserializeNBT(CompoundTag nbt) {
-            data.load(nbt);
-        }
     }
 }

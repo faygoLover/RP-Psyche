@@ -2,7 +2,7 @@ package faygolover.rppsyche.server;
 
 import faygolover.rppsyche.RpPsyche;
 import faygolover.rppsyche.core.Settings;
-import faygolover.rppsyche.integration.CuriosWorn;
+import faygolover.rpcore.api.Worn;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -44,7 +44,7 @@ public final class Lights {
 
     public static boolean carriesLight(ServerPlayer p, Settings c) {
         return isLight(p.getMainHandItem(), c) || isLight(p.getOffhandItem(), c)
-                || CuriosWorn.any(p, s -> isLight(s, c));
+                || Worn.any(p, s -> isLight(s, c));
     }
 
     private static boolean isLight(ItemStack stack, Settings c) {

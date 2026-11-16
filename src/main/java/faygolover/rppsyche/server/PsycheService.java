@@ -164,7 +164,7 @@ public final class PsycheService {
             }
         }
         // Время тела (RP Core): рассудок теряется и возвращается по RP-времени.
-        in.sanityTime = RpCoreAPI.bodyScale() / 8.0;
+        in.sanityTime = RpCoreAPI.bodyRate();
         boolean clinical = b.down() == 3;
         if (d.wasClinical && !clinical) d.sanityHit += c.clinicalReturnSanity * in.sanityLossMul;
         d.wasClinical = clinical;
@@ -660,33 +660,11 @@ public final class PsycheService {
         s.ateAt = s.clock;
     }
 
-    public static void onClone(PlayerEvent.Clone e) {
-        e.getOriginal().reviveCaps();
-        PsycheData from = PsycheData.get(e.getOriginal());
-        PsycheData to = PsycheData.get(e.getEntity());
-        if (from != null && to != null) {
-            to.state.copyFrom(from.state);
-            to.wasClinical = from.wasClinical;
-        }
-        e.getOriginal().invalidateCaps();
-    }
-
-    public static void onLogin(PlayerEvent.PlayerLoggedInEvent e) {
-        resync(e.getEntity());
-    }
-
-    public static void onRespawn(PlayerEvent.PlayerRespawnEvent e) {
-        resync(e.getEntity());
-    }
-
-    public static void onChangeDimension(PlayerEvent.PlayerChangedDimensionEvent e) {
-        resync(e.getEntity());
-    }
-
-    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) {
-        VoiceTracker.forget(e.getEntity().getUUID());
-        FORMER_CRAVE.remove(e.getEntity().getUUID());
-        PsycheData d = PsycheData.get(e.getEntity());
+    /** Игрок вышел (зовёт RP Core через {@code PsycheData.STORE}): убрать служебное по игроку. */
+    public static void forget(ServerPlayer sp) {
+        VoiceTracker.forget(sp.getUUID());
+        FORMER_CRAVE.remove(sp.getUUID());
+        PsycheData d = PsycheData.get(sp);
         if (d != null) {
             d.pausedUntil = 0;
             d.bookChars = -1;

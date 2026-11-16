@@ -1,35 +1,35 @@
 # RP Psyche — указатель кода
 
-Создано `python _family/tools/mapgen.py`, версия мода 0.5.1-1.20.1-forge.
+Создано `python _family/tools/mapgen.py`, версия мода 0.5.2-1.20.1-forge.
 **Руками не править**: пересоздаётся скриптом. Смысл, потоки работы и рецепты — в `docs/MAP.md`.
 Разбор по шаблонам, без компиляции: необычно оформленная регистрация может отсутствовать в списках.
 
-Всего: 32 файлов, 3438 строк Java.
+Всего: 31 файлов, 3286 строк Java.
 
 ## 1. Пакеты
 
 | Пакет | Файлов | Строк |
 |---|---:|---:|
-| `faygolover.rppsyche` | 1 | 117 |
-| `faygolover.rppsyche.capability` | 1 | 135 |
+| `faygolover.rppsyche` | 1 | 99 |
+| `faygolover.rppsyche.capability` | 1 | 132 |
 | `faygolover.rppsyche.client` | 7 | 589 |
-| `faygolover.rppsyche.config` | 1 | 272 |
+| `faygolover.rppsyche.config` | 1 | 225 |
 | `faygolover.rppsyche.core` | 4 | 503 |
 | `faygolover.rppsyche.gametest` | 1 | 166 |
-| `faygolover.rppsyche.integration` | 4 | 201 |
+| `faygolover.rppsyche.integration` | 3 | 139 |
 | `faygolover.rppsyche.integration.voice` | 2 | 131 |
 | `faygolover.rppsyche.item` | 1 | 47 |
 | `faygolover.rppsyche.network` | 2 | 68 |
 | `faygolover.rppsyche.registry` | 2 | 50 |
-| `faygolover.rppsyche.server` | 6 | 1159 |
+| `faygolover.rppsyche.server` | 6 | 1137 |
 
 ## 2. Классы
 
 ### `faygolover.rppsyche`
-- `RpPsyche`, 117 — RP Psyche — стресс и рассудок, аддон к RP Medicine (план — docs/00_plan.md).
+- `RpPsyche`, 99 — RP Psyche — стресс и рассудок, аддон к RP Medicine (план — docs/00_plan.md).
 
 ### `faygolover.rppsyche.capability`
-- `PsycheData`, 135 — Психика игрока (сохраняется) и служебное состояние сервера (не сохраняется).
+- `PsycheData`, 132 — Психика игрока (сохраняется) и служебное состояние сервера (не сохраняется).
 
 ### `faygolover.rppsyche.client`
 - `ClientPsyche`, 92 — Своя психика на клиенте: то, что прислал сервер, и плавные значения для эффектов (переходы без скачков).
@@ -41,7 +41,7 @@
 - `Tremor`, 42 — Дрожь рук от стресса: взгляд (и прицел) мелко дрожит, на панике ещё и медленно «уводит».
 
 ### `faygolover.rppsyche.config`
-- `PsycheConfig`, 272 — rppsyche-server.toml: все числа Settings.
+- `PsycheConfig`, 225 — rppsyche-server.toml: все числа Settings.
 
 ### `faygolover.rppsyche.core`
 - `Psyche`, 113 — Шаг психики за секунду (без Minecraft).
@@ -53,7 +53,6 @@
 - `PsycheEdgeTests`, 166 — Края состояния психики: запись и чтение, смерть, возврат из Края, перезаход.
 
 ### `faygolover.rppsyche.integration`
-- `CuriosWorn`, 62 — Надетое в слоты Curios (налобный фонарь, лампа на поясе — RP Lights).
 - `MedicineCompat`, 59 — RP Medicine (обязательный): боль, лежачие, опьянение, седация, ломка.
 - `TaczCompat`, 57 — TaCZ (необязательный): выстрел слышат все вокруг, а у кого пуля прошла у самой головы — подавление.
 - `ZaCompat`, 23 — Zone Artifacts (необязательный): в Пси-зоне ли игрок.
@@ -76,18 +75,17 @@
 ### `faygolover.rppsyche.server`
 - `Lights`, 82 — Полная тьма: свет у глаз почти ноль и ни у тебя, ни у игрока рядом нет света в руках или надетого в Curios (налобный фонарь, лампа на поясе).
 - `PsycheCommands`, 114 — /rppsyche: цифры психики — только ГМу (уровень прав 2).
-- `PsycheService`, 714 — Психика на сервере.
+- `PsycheService`, 692 — Психика на сервере.
 - `PsycheStatus`, 57 — Психика в осмотре RP Medicine (строки RP Core).
 - `Radios`, 37 — Рация в руке (Settings#voiceRadioItems, Simple Radio): голос уходит через неё, а не напрямую игрокам, и Simple Voice Chat не знает, кто услышал.
 - `Therapy`, 155 — Беседа с психологом (журнал психолога).
 
-Классов без описания: 0 из 32.
+Классов без описания: 0 из 31.
 
 ## 3. Подписки на события
 
 | Событие | Кто слушает |
 |---|---|
-| `AttachCapabilitiesEvent` | `RpPsyche.attachCaps` |
 | `BuildCreativeModeTabContentsEvent` | `PsycheItems.onCreativeTab` |
 | `ClientPlayerNetworkEvent.LoggingOut` | `ClientSetup.onLogout` |
 | `ExplosionEvent.Detonate` | `PsycheService.onExplosion` |
@@ -99,13 +97,8 @@
 | `MicrophonePacketEvent` | `PsycheVoicePlugin.onMicrophone` |
 | `ModConfigEvent.Loading` | `RpPsyche.onConfig` |
 | `ModConfigEvent.Reloading` | `RpPsyche.onConfigReload` |
-| `PlayerEvent.Clone` | `PsycheService.onClone` |
-| `PlayerEvent.PlayerChangedDimensionEvent` | `PsycheService.onChangeDimension` |
-| `PlayerEvent.PlayerLoggedInEvent` | `PsycheService.onLogin` |
-| `PlayerEvent.PlayerLoggedOutEvent` | `PsycheService.onLogout`, `Therapy.onLogout` |
-| `PlayerEvent.PlayerRespawnEvent` | `PsycheService.onRespawn` |
+| `PlayerEvent.PlayerLoggedOutEvent` | `Therapy.onLogout` |
 | `PlayerWakeUpEvent` | `PsycheService.onWake` |
-| `RegisterCapabilitiesEvent` | `RpPsyche.registerCaps` |
 | `RegisterCommandsEvent` | `PsycheCommands.register` |
 | `RegisterGuiOverlaysEvent` | `ClientSetup.overlays` |
 | `RenderGuiEvent.Pre` | `ClientSetup.onGuiPre` |
@@ -141,11 +134,11 @@
 
 ## 7. Конфиги
 
-- server: `PsycheConfig`, вызовов define 4, привязок по имени поля 137
+- server: `PsycheConfig`, вызовов define 0, привязок по имени поля 136
 
 ## 8. Что берёт из RP Core и что ему даёт
 
-Методы `RpCoreAPI` (сколько вызовов): `MISC_TAB` 1, `SpeechChannel` 1, `body` 3, `bodyScale` 1, `dayLengthSeconds` 1, `hasTrait` 8, `isSkillManaged` 1, `nutrition` 2, `registerCommand` 5, `registerModule` 1, `registerSanity` 1, `registerSpeechFilter` 1, `registerStress` 1, `skill` 1, `sleepStage` 1, `timeRunning` 1.
+Методы `RpCoreAPI` (сколько вызовов): `MISC_TAB` 1, `SpeechChannel` 1, `body` 3, `bodyRate` 1, `dayLengthSeconds` 1, `hasTrait` 8, `isSkillManaged` 1, `nutrition` 2, `registerCommand` 5, `registerModule` 1, `registerSanity` 1, `registerSpeechFilter` 1, `registerStress` 1, `skill` 1, `sleepStage` 1, `timeRunning` 1.
 
 Реализует розетки: Source ← `PsycheStatus`.
 
@@ -153,14 +146,9 @@
 
 ## 9. Связи с другими модами
 
-Проверки `isLoaded`: `curios` (CuriosWorn); `fl_zone_arts` (PsycheService); `immersive_melodies` (PsycheService); `rpneeds` (PsycheService); `table_top_craft` (PsycheService); `tacz` (RpPsyche); `voicechat` (PsycheService).
+Проверки `isLoaded`: `fl_zone_arts` (PsycheService); `immersive_melodies` (PsycheService); `rpneeds` (PsycheService); `table_top_craft` (PsycheService); `tacz` (RpPsyche); `voicechat` (PsycheService).
 
-Отражение (`Class.forName`):
-- `CuriosWorn` → `top.theillusivec4.curios.api.CuriosApi`
-- `CuriosWorn` → `top.theillusivec4.curios.api.type.capability.ICuriosItemHandler`
-- `CuriosWorn` → `net.minecraftforge.items.IItemHandlerModifiable`
-
-Пакеты других модов семейства в коде: `rpcore` — 6 файлов; `rpmedicine` — 1 файлов; `zoneartifacts` — 1 файлов.
+Пакеты других модов семейства в коде: `rpcore` — 9 файлов; `rpmedicine` — 1 файлов; `zoneartifacts` — 1 файлов.
 
 ## 10. Зарегистрированные id
 

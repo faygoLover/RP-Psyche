@@ -1,13 +1,9 @@
 package faygolover.rppsyche.config;
 
+import faygolover.rpcore.api.config.SettingsBinder;
 import faygolover.rppsyche.RpPsyche;
 import faygolover.rppsyche.core.Settings;
 import net.minecraftforge.common.ForgeConfigSpec;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * {@code rppsyche-server.toml}: все числа {@link Settings}. Поле настроек и строка конфига связаны по имени
@@ -16,256 +12,213 @@ import java.util.function.Supplier;
 public final class PsycheConfig {
     private PsycheConfig() {}
 
-    private record Entry(Field field, Supplier<?> value) {}
-
-    private static final List<Entry> ENTRIES = new ArrayList<>();
+    /** Привязка полей {@link Settings} к конфигу (RP Core). Границы по умолчанию: числа −1e9…1e9, целые от 0. */
+    private static final SettingsBinder<Settings> S = SettingsBinder.of(Settings.class, Settings::new);
     public static final ForgeConfigSpec SPEC;
 
     static {
-        ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
-        Settings d = new Settings();
-
-        b.comment("Стресс (0–100): гибкий, растёт за десятки секунд, спадает за минуты.").push("stress");
-        bind(b, d, "stressDecay", "Спад стресса в покое, ед./с (от 100 до 0 — около двух минут).");
-        bind(b, d, "stressDecayWhilePressed", "Пока что-то давит, спад слабее: множитель.");
-        bind(b, d, "stressLeak", "Спад растёт с самим стрессом: + k × стресс ед./с — слабые источники дают умеренный стресс,"
+        S.push("stress", "Стресс (0–100): гибкий, растёт за десятки секунд, спадает за минуты.");
+        S.bind("stressDecay", "Спад стресса в покое, ед./с (от 100 до 0 — около двух минут).");
+        S.bind("stressDecayWhilePressed", "Пока что-то давит, спад слабее: множитель.");
+        S.bind("stressLeak", "Спад растёт с самим стрессом: + k × стресс ед./с — слабые источники дают умеренный стресс,"
                 + " до паники доводят только сильные.");
-        bind(b, d, "impulseFlow", "Толчки (выстрел, взрыв, удар) входят в стресс не сразу: такая доля накопленного за секунду.");
-        bind(b, d, "sanityStressGain", "Плохой рассудок ускоряет рост стресса: ×(1 + k × (1 − рассудок/100)).");
-        bind(b, d, "stressFloor", "«Пол» стресса от плохого рассудка: (100 − рассудок) × k — ниже стресс не спадает.");
-        bind(b, d, "stressFloorRise", "Снизу к полу стресс тянет медленно: ед./с.");
-        bind(b, d, "cowardGain", "Трусливый: рост стресса ×.");
-        bind(b, d, "braveGain", "Храбрый (и Волевой): рост стресса ×.");
-        b.pop();
+        S.bind("impulseFlow", "Толчки (выстрел, взрыв, удар) входят в стресс не сразу: такая доля накопленного за секунду.");
+        S.bind("sanityStressGain", "Плохой рассудок ускоряет рост стресса: ×(1 + k × (1 − рассудок/100)).");
+        S.bind("stressFloor", "«Пол» стресса от плохого рассудка: (100 − рассудок) × k — ниже стресс не спадает.");
+        S.bind("stressFloorRise", "Снизу к полу стресс тянет медленно: ед./с.");
+        S.bind("cowardGain", "Трусливый: рост стресса ×.");
+        S.bind("braveGain", "Храбрый (и Волевой): рост стресса ×.");
+        S.pop();
 
-        b.comment("Темнота: только полная — свет ~0 и ни у кого рядом нет света в руках.").push("darkness");
-        bind(b, d, "darkLight", "Полная тьма: свет у глаз не выше этого (0–15).");
-        bind(b, d, "darkDelay", "Столько секунд во тьме — пока ничего.");
-        bind(b, d, "darkRate", "Потом стресс растёт со столько ед./с…");
-        bind(b, d, "darkRateMax", "…и через dark_ramp секунд — со столько.");
-        bind(b, d, "darkRamp", "За сколько секунд рост доходит до наибольшего.");
-        bind(b, d, "darkStressCap", "Выше этой отметки тьма стресс не поднимает (дрожь — с 60).");
-        bind(b, d, "darkFriendLight", "Свет у игрока рядом (в этом радиусе) светит и тебе.");
-        bind(b, d, "lightItems", "Что светит в руках или надето в Curios (налобный, лампа на поясе): id предмета или id{ключ} — тогда только если в NBT предмета ключ включён"
+        S.push("darkness", "Темнота: только полная — свет ~0 и ни у кого рядом нет света в руках.");
+        S.bind("darkLight", "Полная тьма: свет у глаз не выше этого (0–15).");
+        S.bind("darkDelay", "Столько секунд во тьме — пока ничего.");
+        S.bind("darkRate", "Потом стресс растёт со столько ед./с…");
+        S.bind("darkRateMax", "…и через dark_ramp секунд — со столько.");
+        S.bind("darkRamp", "За сколько секунд рост доходит до наибольшего.");
+        S.bind("darkStressCap", "Выше этой отметки тьма стресс не поднимает (дрожь — с 60).");
+        S.bind("darkFriendLight", "Свет у игрока рядом (в этом радиусе) светит и тебе.");
+        S.bind("lightItems", "Что светит в руках или надето в Curios (налобный, лампа на поясе): id предмета или id{ключ} — тогда только если в NBT предмета ключ включён"
                 + " (фонари). Плюс тег предметов rppsyche:light_sources.");
-        b.pop();
+        S.pop();
 
-        b.comment("Одиночество: не сразу, а когда долго никого рядом.").push("loneliness");
-        bind(b, d, "aloneRadius", "Один — нет живого игрока (не креатив и не наблюдатель) в этом радиусе.");
-        bind(b, d, "aloneDelay", "Столько секунд одному — пока ничего.");
-        bind(b, d, "aloneRate", "Потом стресс растёт со столько ед./с…");
-        bind(b, d, "aloneRateMax", "…и через alone_ramp секунд — со столько.");
-        bind(b, d, "aloneRamp", "За сколько секунд рост доходит до наибольшего.");
-        bind(b, d, "aloneStressCap", "Выше этой отметки одиночество стресс не поднимает.");
-        bind(b, d, "darkAloneCap", "Один и в полной тьме — вместе поднимают до этой отметки.");
-        bind(b, d, "aloneForget", "Рядом люди — счётчик одиночества тает с такой скоростью (секунд за секунду).");
-        b.pop();
+        S.push("loneliness", "Одиночество: не сразу, а когда долго никого рядом.");
+        S.bind("aloneRadius", "Один — нет живого игрока (не креатив и не наблюдатель) в этом радиусе.");
+        S.bind("aloneDelay", "Столько секунд одному — пока ничего.");
+        S.bind("aloneRate", "Потом стресс растёт со столько ед./с…");
+        S.bind("aloneRateMax", "…и через alone_ramp секунд — со столько.");
+        S.bind("aloneRamp", "За сколько секунд рост доходит до наибольшего.");
+        S.bind("aloneStressCap", "Выше этой отметки одиночество стресс не поднимает.");
+        S.bind("darkAloneCap", "Один и в полной тьме — вместе поднимают до этой отметки.");
+        S.bind("aloneForget", "Рядом люди — счётчик одиночества тает с такой скоростью (секунд за секунду).");
+        S.pop();
 
-        b.comment("Компания и заразность психики.").push("company");
-        bind(b, d, "companyRadius", "Люди в этом радиусе — компания.");
-        bind(b, d, "companyDecay", "Компания: спад стресса ×.");
-        bind(b, d, "voiceCompanyDecay", "Двусторонний разговор в голосовом чате: спад стресса ×.");
-        bind(b, d, "contagionRadius", "Видно паникующего в этом радиусе — стресс растёт.");
-        bind(b, d, "contagionRate", "Сколько ед./с даёт паникующий рядом.");
-        bind(b, d, "panicLevel", "Паника — стресс не ниже этого.");
-        bind(b, d, "calmLevel", "Спокоен — стресс не выше этого.");
-        bind(b, d, "calmNearbyGain", "Рядом спокойный: рост стресса ×.");
-        b.pop();
+        S.push("company", "Компания и заразность психики.");
+        S.bind("companyRadius", "Люди в этом радиусе — компания.");
+        S.bind("companyDecay", "Компания: спад стресса ×.");
+        S.bind("voiceCompanyDecay", "Двусторонний разговор в голосовом чате: спад стресса ×.");
+        S.bind("contagionRadius", "Видно паникующего в этом радиусе — стресс растёт.");
+        S.bind("contagionRate", "Сколько ед./с даёт паникующий рядом.");
+        S.bind("panicLevel", "Паника — стресс не ниже этого.");
+        S.bind("calmLevel", "Спокоен — стресс не выше этого.");
+        S.bind("calmNearbyGain", "Рядом спокойный: рост стресса ×.");
+        S.pop();
 
-        b.comment("Бой: выстрелы TaCZ, пули рядом, взрывы, свой урон.").push("combat");
-        bind(b, d, "shotRadius", "Выстрел слышно в этом радиусе.");
-        bind(b, d, "shotCloseRadius", "Ближе этого — выстрел рядом.");
-        bind(b, d, "shotClose", "Толчок от выстрела рядом.");
-        bind(b, d, "shotFar", "Толчок от выстрела вдалеке.");
-        bind(b, d, "nearMissRadius", "Пуля прошла ближе этого (блоков) от головы — подавление.");
-        bind(b, d, "nearMiss", "Толчок от пули рядом.");
-        bind(b, d, "explosionRadius", "Взрыв действует в этом радиусе.");
-        bind(b, d, "explosion", "Толчок от взрыва в упор (дальше — меньше).");
-        bind(b, d, "hurtPerDamage", "Свой урон: толчок за 1 ед. урона.");
-        bind(b, d, "hurtMax", "Свой урон: не больше столько за удар.");
-        b.pop();
+        S.push("combat", "Бой: выстрелы TaCZ, пули рядом, взрывы, свой урон.");
+        S.bind("shotRadius", "Выстрел слышно в этом радиусе.");
+        S.bind("shotCloseRadius", "Ближе этого — выстрел рядом.");
+        S.bind("shotClose", "Толчок от выстрела рядом.");
+        S.bind("shotFar", "Толчок от выстрела вдалеке.");
+        S.bind("nearMissRadius", "Пуля прошла ближе этого (блоков) от головы — подавление.");
+        S.bind("nearMiss", "Толчок от пули рядом.");
+        S.bind("explosionRadius", "Взрыв действует в этом радиусе.");
+        S.bind("explosion", "Толчок от взрыва в упор (дальше — меньше).");
+        S.bind("hurtPerDamage", "Свой урон: толчок за 1 ед. урона.");
+        S.bind("hurtMax", "Свой урон: не больше столько за удар.");
+        S.pop();
 
-        b.comment("Тело (RP Medicine), голод и жажда.").push("body");
-        bind(b, d, "painThreshold", "Боль выше этого давит на психику.");
-        bind(b, d, "painRate", "При боли 100 — столько ед./с (ниже — меньше).");
-        bind(b, d, "downedRadius", "Лежачий в этом радиусе (нокдаун, обморок, тело вышедшего) давит.");
-        bind(b, d, "downedRate", "Лежачий рядом: ед./с.");
-        bind(b, d, "clinicalRate", "Клиническая смерть рядом: ед./с.");
-        bind(b, d, "hungerRate", "Голод со второй стадии: ед./с.");
-        bind(b, d, "sleepStage2Gain", "Сонливость (RP Needs): рост стресса ×.");
-        bind(b, d, "sleepStage3Gain", "Валится с ног и дальше: рост стресса ×.");
-        bind(b, d, "temperatureRate", "Долго холодно или жарко: ед./с.");
-        bind(b, d, "temperatureDelay", "Через столько секунд холод или жара начинают давить.");
-        bind(b, d, "harmKnockdownStress", "Своей рукой отправил человека в нокдаун: стресс.");
-        bind(b, d, "harmLethalStress", "Довёл до клинической смерти или смерти: стресс.");
-        bind(b, d, "harmLethalSanity", "То же: потеря рассудка.");
-        bind(b, d, "harmRepeat", "Повтор за RP-сутки: доля силы.");
-        bind(b, d, "harmSoldier", "Подготовленный солдат: множитель.");
-        bind(b, d, "harmPacifist", "Пацифист: множитель.");
-        bind(b, d, "smokeCompanyRadius", "Перекур: кто курил в этом радиусе, блоки.");
-        bind(b, d, "smokeCompanyWindow", "Перекур: кто курил за столько секунд до тебя.");
-        bind(b, d, "smokeCompanyBonus", "Перекур в компании: облегчение от никотина ×.");
-        bind(b, d, "supportRadius", "Группа поддержки: психолог с журналом и ещё один зависимый в этом радиусе, блоки.");
-        bind(b, d, "supportSeconds", "Группа поддержки: столько секунд вместе (копится, перерывы не сбрасывают) — встреча засчитана.");
-        bind(b, d, "supportCraveMult", "После встречи на RP-сутки: стресс от тяги и ломки ×.");
-        bind(b, d, "thirstRate", "Жажда со второй стадии: ед./с.");
-        bind(b, d, "withdrawalRate", "Ломка: ед./с.");
-        bind(b, d, "sedationGainCut", "Седация (диазепам) 0–100: рост стресса ×(1 − k × седация/100), спад ×(1 + седация/100).");
-        bind(b, d, "alcoholDecay", "Опьянение 0–100: спад стресса ×(1 + k × опьянение/100).");
-        bind(b, d, "clinicalReturnSanity", "Вернули из клинической смерти — рассудок минус столько.");
-        b.pop();
+        S.push("body", "Тело (RP Medicine), голод и жажда.");
+        S.bind("painThreshold", "Боль выше этого давит на психику.");
+        S.bind("painRate", "При боли 100 — столько ед./с (ниже — меньше).");
+        S.bind("downedRadius", "Лежачий в этом радиусе (нокдаун, обморок, тело вышедшего) давит.");
+        S.bind("downedRate", "Лежачий рядом: ед./с.");
+        S.bind("clinicalRate", "Клиническая смерть рядом: ед./с.");
+        S.bind("hungerRate", "Голод со второй стадии: ед./с.");
+        S.bind("sleepStage2Gain", "Сонливость (RP Needs): рост стресса ×.");
+        S.bind("sleepStage3Gain", "Валится с ног и дальше: рост стресса ×.");
+        S.bind("temperatureRate", "Долго холодно или жарко: ед./с.");
+        S.bind("temperatureDelay", "Через столько секунд холод или жара начинают давить.");
+        S.bind("harmKnockdownStress", "Своей рукой отправил человека в нокдаун: стресс.");
+        S.bind("harmLethalStress", "Довёл до клинической смерти или смерти: стресс.");
+        S.bind("harmLethalSanity", "То же: потеря рассудка.");
+        S.bind("harmRepeat", "Повтор за RP-сутки: доля силы.");
+        S.bind("harmSoldier", "Подготовленный солдат: множитель.");
+        S.bind("harmPacifist", "Пацифист: множитель.");
+        S.bind("smokeCompanyRadius", "Перекур: кто курил в этом радиусе, блоки.");
+        S.bind("smokeCompanyWindow", "Перекур: кто курил за столько секунд до тебя.");
+        S.bind("smokeCompanyBonus", "Перекур в компании: облегчение от никотина ×.");
+        S.bind("supportRadius", "Группа поддержки: психолог с журналом и ещё один зависимый в этом радиусе, блоки.");
+        S.bind("supportSeconds", "Группа поддержки: столько секунд вместе (копится, перерывы не сбрасывают) — встреча засчитана.");
+        S.bind("supportCraveMult", "После встречи на RP-сутки: стресс от тяги и ломки ×.");
+        S.bind("thirstRate", "Жажда со второй стадии: ед./с.");
+        S.bind("withdrawalRate", "Ломка: ед./с.");
+        S.bind("sedationGainCut", "Седация (диазепам) 0–100: рост стресса ×(1 − k × седация/100), спад ×(1 + седация/100).");
+        S.bind("alcoholDecay", "Опьянение 0–100: спад стресса ×(1 + k × опьянение/100).");
+        S.bind("clinicalReturnSanity", "Вернули из клинической смерти — рассудок минус столько.");
+        S.pop();
 
-        b.comment("Облегчение: сон и еда. Повтор раньше отката даёт долю (прошло / откат).").push("relief");
-        bind(b, d, "sleepRelief", "Проспал ночь: стресс минус столько.");
-        bind(b, d, "sleepSanity", "Проспал ночь: рассудок плюс столько.");
-        bind(b, d, "sleepCooldown", "Откат сна, секунд онлайна.");
-        bind(b, d, "foodRelief", "Еда: стресс минус столько за 100 ккал…");
-        bind(b, d, "foodReliefMax", "…но не больше столько за раз.");
-        bind(b, d, "foodCooldown", "Откат еды, секунд онлайна.");
-        b.pop();
+        S.push("relief", "Облегчение: сон и еда. Повтор раньше отката даёт долю (прошло / откат).");
+        S.bind("sleepRelief", "Проспал ночь: стресс минус столько.");
+        S.bind("sleepSanity", "Проспал ночь: рассудок плюс столько.");
+        S.bind("sleepCooldown", "Откат сна, секунд онлайна.");
+        S.bind("foodRelief", "Еда: стресс минус столько за 100 ккал…");
+        S.bind("foodReliefMax", "…но не больше столько за раз.");
+        S.bind("foodCooldown", "Откат еды, секунд онлайна.");
+        S.pop();
 
-        b.comment("Дрожь рук от стресса: с 60 мелкая, с 80 ещё и уводит взгляд.").push("tremor");
-        bind(b, d, "tremorScale", "Общая сила дрожи (1 — как в 0.1.0).");
-        bind(b, d, "tremorBrave", "Храбрый: дрожь ×.");
-        bind(b, d, "tremorCoward", "Трусливый: дрожь ×.");
-        b.pop();
+        S.push("tremor", "Дрожь рук от стресса: с 60 мелкая, с 80 ещё и уводит взгляд.");
+        S.bind("tremorScale", "Общая сила дрожи (1 — как в 0.1.0).");
+        S.bind("tremorBrave", "Храбрый: дрожь ×.");
+        S.bind("tremorCoward", "Трусливый: дрожь ×.");
+        S.pop();
 
-        b.comment("Рассудок (0–100, 100 — норма): инертный, портится за часы, лечится днями онлайна.").push("sanity");
-        bind(b, d, "sanityLossThreshold", "Стресс выше этого съедает рассудок.");
-        bind(b, d, "sanityLossPerHour", "При стрессе 100 — столько % в час.");
-        bind(b, d, "sanityRecoverBelow", "Стресс ниже этого — рассудок восстанавливается…");
-        bind(b, d, "sanityRecoverPerHour", "…на столько % в час.");
-        bind(b, d, "panicPeak", "Пик паники — стресс дошёл до этого.");
-        bind(b, d, "panicPeakLoss", "Пик паники: рассудок минус столько.");
-        bind(b, d, "panicPeakCooldown", "Пик паники бьёт по рассудку не чаще, секунд.");
-        bind(b, d, "willedLoss", "Волевой: потери рассудка ×.");
-        bind(b, d, "suggestibleLoss", "Внушаемый: потери рассудка ×.");
-        b.pop();
+        S.push("sanity", "Рассудок (0–100, 100 — норма): инертный, портится за часы, лечится днями онлайна.");
+        S.bind("sanityLossThreshold", "Стресс выше этого съедает рассудок.");
+        S.bind("sanityLossPerHour", "При стрессе 100 — столько % в час.");
+        S.bind("sanityRecoverBelow", "Стресс ниже этого — рассудок восстанавливается…");
+        S.bind("sanityRecoverPerHour", "…на столько % в час.");
+        S.bind("panicPeak", "Пик паники — стресс дошёл до этого.");
+        S.bind("panicPeakLoss", "Пик паники: рассудок минус столько.");
+        S.bind("panicPeakCooldown", "Пик паники бьёт по рассудку не чаще, секунд.");
+        S.bind("willedLoss", "Волевой: потери рассудка ×.");
+        S.bind("suggestibleLoss", "Внушаемый: потери рассудка ×.");
+        S.pop();
 
-        b.comment("Пси-зона (Zone Artifacts).").push("psi");
-        bind(b, d, "psiStress", "В Пси-зоне стресс + ед./с.");
-        bind(b, d, "psiSanityPerMinute", "В Пси-зоне рассудок минус % в минуту (× сила аномалии).");
-        bind(b, d, "psiWilled", "Волевой: Пси-зона ×.");
-        bind(b, d, "psiSuggestible", "Внушаемый: Пси-зона ×.");
-        b.pop();
+        S.push("psi", "Пси-зона (Zone Artifacts).");
+        S.bind("psiStress", "В Пси-зоне стресс + ед./с.");
+        S.bind("psiSanityPerMinute", "В Пси-зоне рассудок минус % в минуту (× сила аномалии).");
+        S.bind("psiWilled", "Волевой: Пси-зона ×.");
+        S.bind("psiSuggestible", "Внушаемый: Пси-зона ×.");
+        S.pop();
 
-        b.comment("Голос (Simple Voice Chat): двусторонний разговор — компания, разговор с собой — минус рассудок.").push("voice");
-        bind(b, d, "voiceRadius", "Радиус голоса для двустороннего разговора, блоков; 0 — как в Simple Voice Chat.");
-        bind(b, d, "voiceTwoWayWindow", "Разговор двусторонний, если оба говорили за последние столько секунд.");
-        bind(b, d, "voiceUtteranceGapMs", "Фраза кончилась, если тишина дольше, мс.");
-        bind(b, d, "selfTalkCount", "Разговор с собой: столько фраз подряд никто не услышал (голос не дошёл ни до кого"
+        S.push("voice", "Голос (Simple Voice Chat): двусторонний разговор — компания, разговор с собой — минус рассудок.");
+        S.bind("voiceRadius", "Радиус голоса для двустороннего разговора, блоков; 0 — как в Simple Voice Chat.");
+        S.bind("voiceTwoWayWindow", "Разговор двусторонний, если оба говорили за последние столько секунд.");
+        S.bind("voiceUtteranceGapMs", "Фраза кончилась, если тишина дольше, мс.");
+        S.bind("selfTalkCount", "Разговор с собой: столько фраз подряд никто не услышал (голос не дошёл ни до кого"
                 + " живого — ни рядом, ни в группе, и не в рацию)…");
-        bind(b, d, "selfTalkWindow", "…за столько секунд…");
-        bind(b, d, "selfTalkLoss", "…рассудок минус столько…");
-        bind(b, d, "selfTalkCooldown", "…не чаще раза в столько секунд.");
-        bind(b, d, "voiceRadioItems", "Рации (id предметов): говорит в такую, что в руке, — говорит с кем-то.");
-        b.pop();
+        S.bind("selfTalkWindow", "…за столько секунд…");
+        S.bind("selfTalkLoss", "…рассудок минус столько…");
+        S.bind("selfTalkCooldown", "…не чаще раза в столько секунд.");
+        S.bind("voiceRadioItems", "Рации (id предметов): говорит в такую, что в руке, — говорит с кем-то.");
+        S.pop();
 
-        b.comment("Пауза ГМа (/rppsyche pause): психика стоит, эффекты выключены.").push("pause");
-        bind(b, d, "pauseDefaultMinutes", "Без указанного времени — на столько минут.");
-        b.pop();
+        S.push("pause", "Пауза ГМа (/rppsyche pause): психика стоит, эффекты выключены.");
+        S.bind("pauseDefaultMinutes", "Без указанного времени — на столько минут.");
+        S.pop();
 
-        b.comment("Курение и выпивка: что считается — общая база RP Core (rpcore/consumables).").push("substances");
-        bind(b, d, "nicotineRelief", "Никотин: стресс − столько за дозу 1 (сигарета; Tobacconist — 0.4).");
-        bind(b, d, "nicotineCooldown", "Повтор раньше стольких секунд — доля облегчения.");
-        bind(b, d, "smokerCraveRate", "Тяга зависимого (RP Medicine, любое вещество; до ломки и после острой фазы): стресс + столько ед./с.");
-        bind(b, d, "formerCraveStress", "Бывший зависимый: со стольки стресса тянет к веществу (только строка, без штрафов).");
-        bind(b, d, "formerCraveCooldown", "…не чаще раза в столько секунд.");
-        bind(b, d, "alcoholRelief", "Алкоголь: стресс − столько за дозу 1 (пиво; вино 1.5, крепкое 2), сразу, без отката.");
-        bind(b, d, "alcoholCooldown", "Повтор раньше стольких секунд — доля облегчения.");
-        b.pop();
+        S.push("substances", "Курение и выпивка: что считается — общая база RP Core (rpcore/consumables).");
+        S.bind("nicotineRelief", "Никотин: стресс − столько за дозу 1 (сигарета; Tobacconist — 0.4).");
+        S.bind("nicotineCooldown", "Повтор раньше стольких секунд — доля облегчения.");
+        S.bind("smokerCraveRate", "Тяга зависимого (RP Medicine, любое вещество; до ломки и после острой фазы): стресс + столько ед./с.");
+        S.bind("formerCraveStress", "Бывший зависимый: со стольки стресса тянет к веществу (только строка, без штрафов).");
+        S.bind("formerCraveCooldown", "…не чаще раза в столько секунд.");
+        S.bind("alcoholRelief", "Алкоголь: стресс − столько за дозу 1 (пиво; вино 1.5, крепкое 2), сразу, без отката.");
+        S.bind("alcoholCooldown", "Повтор раньше стольких секунд — доля облегчения.");
+        S.pop();
 
-        b.comment("События настроения от других модов (КПК, еда).").push("mood");
-        bind(b, d, "messageAloneForget", "Написал с КПК — одиночество отступает на столько секунд.");
-        bind(b, d, "messageCooldown", "Не чаще раза в столько секунд.");
-        bind(b, d, "fedContentRelief", "«Сыт и доволен» (RP Culinary) — стресс −.");
-        bind(b, d, "favouriteRelief", "Любимая еда — стресс − за порцию.");
-        bind(b, d, "dislikedStress", "Нелюбимая еда — толчок стресса + за порцию.");
-        bind(b, d, "nightmareStress", "RP Needs: приснился кошмар — толчок стресса +.");
-        bind(b, d, "restedRelief", "RP Needs: выспался в кровати или на койке — стресс −.");
-        b.pop();
+        S.push("mood", "События настроения от других модов (КПК, еда).");
+        S.bind("messageAloneForget", "Написал с КПК — одиночество отступает на столько секунд.");
+        S.bind("messageCooldown", "Не чаще раза в столько секунд.");
+        S.bind("fedContentRelief", "«Сыт и доволен» (RP Culinary) — стресс −.");
+        S.bind("favouriteRelief", "Любимая еда — стресс − за порцию.");
+        S.bind("dislikedStress", "Нелюбимая еда — толчок стресса + за порцию.");
+        S.bind("nightmareStress", "RP Needs: приснился кошмар — толчок стресса +.");
+        S.bind("restedRelief", "RP Needs: выспался в кровати или на койке — стресс −.");
+        S.pop();
 
-        b.comment("Антипсихотик (RP Medicine, галоперидол).").push("antipsychotic");
-        bind(b, d, "antipsychoticSuppress", "Сила эффекта не ниже этого — галлюцинации приглушены.");
-        bind(b, d, "antipsychoticSanityPerHour", "Рассудок + % в час × сила.");
-        b.pop();
+        S.push("antipsychotic", "Антипсихотик (RP Medicine, галоперидол).");
+        S.bind("antipsychoticSuppress", "Сила эффекта не ниже этого — галлюцинации приглушены.");
+        S.bind("antipsychoticSanityPerHour", "Рассудок + % в час × сила.");
+        S.pop();
 
-        b.comment("Журнал психолога: беседа с пациентом.").push("therapy");
-        bind(b, d, "therapySeconds", "Беседа длится столько секунд.");
-        bind(b, d, "therapyCheckSeconds", "Раз в столько секунд проверяется, что оба рядом.");
-        bind(b, d, "therapyRadius", "Рядом — не дальше стольких блоков.");
-        bind(b, d, "therapySanity", "Итог: рассудок +.");
-        bind(b, d, "therapyRelief", "Итог: стресс −.");
-        bind(b, d, "therapySkill", "Нужен навык «Медицина» не ниже (RP Perks; без него — любой).");
-        bind(b, d, "therapyJournalCooldown", "Откат журнала, секунд.");
-        bind(b, d, "therapyPatientTicks", "Откат пациента, тиков времени мира (12000 — 12 RP-часов).");
-        b.pop();
+        S.push("therapy", "Журнал психолога: беседа с пациентом.");
+        S.bind("therapySeconds", "Беседа длится столько секунд.");
+        S.bind("therapyCheckSeconds", "Раз в столько секунд проверяется, что оба рядом.");
+        S.bind("therapyRadius", "Рядом — не дальше стольких блоков.");
+        S.bind("therapySanity", "Итог: рассудок +.");
+        S.bind("therapyRelief", "Итог: стресс −.");
+        S.bind("therapySkill", "Нужен навык «Медицина» не ниже (RP Perks; без него — любой).");
+        S.bind("therapyJournalCooldown", "Откат журнала, секунд.");
+        S.bind("therapyPatientTicks", "Откат пациента, тиков времени мира (12000 — 12 RP-часов).");
+        S.pop();
 
-        b.comment("Досуг: то, что держит рассудок.").push("leisure");
-        bind(b, d, "petSanity", "Погладить своё животное пустой рукой: рассудок +.");
-        bind(b, d, "petCooldown", "Откат, секунд.");
-        bind(b, d, "diaryMinChars", "Дневник: дописал в книге столько знаков…");
-        bind(b, d, "diarySanity", "…рассудок +.");
-        bind(b, d, "diaryCooldownTicks", "Не чаще раза в столько тиков времени мира (24000 — RP-сутки).");
-        bind(b, d, "musicRadius", "Музыка (Immersive Melodies): слышно в этом радиусе.");
-        bind(b, d, "musicSanityPerHour", "Играешь или слушаешь — рассудок + % в час.");
-        bind(b, d, "gameRadius", "Настольная игра (Table Top Craft): у доски — не дальше стольких блоков.");
-        bind(b, d, "gameSanityPerHour", "Ты и ещё кто-то у одной доски — рассудок + % в час.");
-        bind(b, d, "leisureDailyCap", "Музыка и настолки вместе — не больше столько рассудка за RP-сутки.");
-        b.pop();
+        S.push("leisure", "Досуг: то, что держит рассудок.");
+        S.bind("petSanity", "Погладить своё животное пустой рукой: рассудок +.");
+        S.bind("petCooldown", "Откат, секунд.");
+        S.bind("diaryMinChars", "Дневник: дописал в книге столько знаков…");
+        S.bind("diarySanity", "…рассудок +.");
+        S.bind("diaryCooldownTicks", "Не чаще раза в столько тиков времени мира (24000 — RP-сутки).");
+        S.bind("musicRadius", "Музыка (Immersive Melodies): слышно в этом радиусе.");
+        S.bind("musicSanityPerHour", "Играешь или слушаешь — рассудок + % в час.");
+        S.bind("gameRadius", "Настольная игра (Table Top Craft): у доски — не дальше стольких блоков.");
+        S.bind("gameSanityPerHour", "Ты и ещё кто-то у одной доски — рассудок + % в час.");
+        S.bind("leisureDailyCap", "Музыка и настолки вместе — не больше столько рассудка за RP-сутки.");
+        S.pop();
 
-        b.comment("Речь.").push("speech");
-        bind(b, d, "stutterFrom", "Заикание в речи и КПК — со стресса.");
-        b.pop();
+        S.push("speech", "Речь.");
+        S.bind("stutterFrom", "Заикание в речи и КПК — со стресса.");
+        S.pop();
 
-        SPEC = b.build();
-    }
-
-    private static String key(String field) {
-        StringBuilder sb = new StringBuilder();
-        for (char ch : field.toCharArray()) {
-            if (Character.isUpperCase(ch)) sb.append('_').append(Character.toLowerCase(ch));
-            else sb.append(ch);
-        }
-        return sb.toString();
-    }
-
-    private static void bind(ForgeConfigSpec.Builder b, Settings d, String name, String comment) {
-        try {
-            Field f = Settings.class.getField(name);
-            Object def = f.get(d);
-            String key = key(name);
-            Supplier<?> v;
-            if (f.getType() == double.class) {
-                v = b.comment(comment).defineInRange(key, (double) def, -1e9, 1e9);
-            } else if (f.getType() == int.class) {
-                v = b.comment(comment).defineInRange(key, (int) def, 0, Integer.MAX_VALUE);
-            } else if (f.getType() == long.class) {
-                v = b.comment(comment).defineInRange(key, (long) def, 0L, Long.MAX_VALUE);
-            } else if (f.getType() == List.class) {
-                @SuppressWarnings("unchecked") List<String> list = (List<String>) def;
-                v = b.comment(comment).defineListAllowEmpty(List.of(key), () -> list, o -> o instanceof String);
-            } else {
-                throw new IllegalStateException("тип " + f.getType());
-            }
-            ENTRIES.add(new Entry(f, v));
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("RP Psyche: нет настройки " + name, e);
-        }
+        SPEC = S.build();
     }
 
     /** Переложить значения конфига в {@link Settings}. */
     public static void bake() {
-        Settings s = new Settings();
-        for (Entry e : ENTRIES) {
-            try {
-                Object v = e.value.get();
-                if (e.field.getType() == List.class) v = List.copyOf((List<?>) v);
-                e.field.set(s, v);
-            } catch (ReflectiveOperationException ex) {
-                RpPsyche.LOGGER.error("RP Psyche: настройка {} не прочитана", e.field.getName(), ex);
-            }
+        try {
+            Settings.set(S.bake());
+        } catch (RuntimeException ex) {
+            RpPsyche.LOGGER.error("RP Psyche: настройки не прочитаны", ex);
         }
-        Settings.set(s);
     }
 }
