@@ -2,7 +2,9 @@ package faygolover.rppsyche.server;
 
 import faygolover.rppsyche.RpPsyche;
 import faygolover.rppsyche.core.Settings;
+import faygolover.rpcore.api.RpCoreAPI;
 import faygolover.rpcore.api.Worn;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -34,17 +36,23 @@ public final class Lights {
     public static boolean inTotalDarkness(ServerPlayer p, Settings c) {
         BlockPos eye = BlockPos.containing(p.getEyePosition());
         if (p.level().getMaxLocalRawBrightness(eye) > c.darkLight) return false;
-        if (carriesLight(p, c)) return false;
+        if (RpCoreAPI.carriesLight(p)) return false;
         double r2 = c.darkFriendLight * c.darkFriendLight;
         for (ServerPlayer o : p.serverLevel().players()) {
-            if (o != p && !o.isSpectator() && o.distanceToSqr(p) <= r2 && carriesLight(o, c)) return false;
+            if (o != p && !o.isSpectator() && o.distanceToSqr(p) <= r2 && RpCoreAPI.carriesLight(o)) return false;
         }
         return true;
     }
 
-    public static boolean carriesLight(ServerPlayer p, Settings c) {
-        return isLight(p.getMainHandItem(), c) || isLight(p.getOffhandItem(), c)
-                || Worn.any(p, s -> isLight(s, c));
+    /**
+     * Свой список света ({@code light_items} в конфиге и тег {@code rppsyche:light_sources}): в руках или надето.
+     * Зарегистрирован в RP Core как поставщик света ({@code RpPsyche}), поэтому его видят и другие моды; сама тьма
+     * спрашивает общий ответ {@code RpCoreAPI.carriesLight} — в него входят и фонари RP Lights.
+     */
+    public static boolean carriesLight(LivingEntity e) {
+        Settings c = Settings.get();
+        return isLight(e.getMainHandItem(), c) || isLight(e.getOffhandItem(), c)
+                || Worn.any(e, s -> isLight(s, c));
     }
 
     private static boolean isLight(ItemStack stack, Settings c) {

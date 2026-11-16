@@ -40,6 +40,9 @@ public class RpPsyche {
         modBus.addListener(faygolover.rppsyche.registry.PsycheItems::onCreativeTab);
         modBus.addListener(this::commonSetup);
         PsycheData.register();
+        // Свой список светящих предметов — поставщик света RP Core (его видит и Zone Artifacts).
+        faygolover.rpcore.api.RpCoreAPI.registerLight(new net.minecraft.resources.ResourceLocation(MODID, "light_items"),
+                faygolover.rppsyche.server.Lights::carriesLight);
         modBus.addListener(this::onConfig);
         modBus.addListener(this::onConfigReload);
 

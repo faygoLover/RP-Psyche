@@ -195,4 +195,31 @@ public final class PsycheEdgeTests {
         }
         h.succeed();
     }
+
+    /**
+     * Свет через RP Core: свой список светящих предметов виден общему вопросу «несёт свет», и свет, о котором
+     * сказал другой мод (RP Lights), отменяет полную тьму без правки конфига психики.
+     */
+    @GameTest(template = T, batch = "psyche_edge_light")
+    public static void lightThroughCore(GameTestHelper h) {
+        ServerPlayer p = player(h);
+        try {
+            if (faygolover.rpcore.api.RpCoreAPI.carriesLight(p)) h.fail("С пустыми руками игрок «несёт свет»");
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.TORCH));
+            if (!faygolover.rpcore.api.RpCoreAPI.carriesLight(p)) h.fail("Факел в руке (список light_items) не виден через RP Core");
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
+            // Чужой мод говорит, что игрок с палкой несёт свет: психика должна поверить.
+            faygolover.rpcore.api.RpCoreAPI.registerLight(new net.minecraft.resources.ResourceLocation("rppsyche", "test_other_mod"),
+                    e -> e.getMainHandItem().is(net.minecraft.world.item.Items.STICK));
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STICK));
+            faygolover.rppsyche.core.Settings c = new faygolover.rppsyche.core.Settings();
+            c.darkLight = 15;   // по свету вокруг — «тьма» всегда: проверяем только свет в руках
+            if (faygolover.rppsyche.server.Lights.inTotalDarkness(p, c)) h.fail("Свет от другого мода не отменил полную тьму");
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
+            if (!faygolover.rppsyche.server.Lights.inTotalDarkness(p, c)) h.fail("Без света в руках тьма не наступила");
+        } finally {
+            remove(h, p);
+        }
+        h.succeed();
+    }
 }

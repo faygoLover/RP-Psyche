@@ -1,32 +1,32 @@
 # RP Psyche — указатель кода
 
-Создано `python _family/tools/mapgen.py`, версия мода 0.5.3-1.20.1-forge.
+Создано `python _family/tools/mapgen.py`, версия мода 0.5.4-1.20.1-forge.
 **Руками не править**: пересоздаётся скриптом. Смысл, потоки работы и рецепты — в `docs/MAP.md`.
 Разбор по шаблонам, без компиляции: необычно оформленная регистрация может отсутствовать в списках.
 
-Всего: 31 файлов, 3324 строк Java.
+Всего: 31 файлов, 3362 строк Java.
 
 ## 1. Пакеты
 
 | Пакет | Файлов | Строк |
 |---|---:|---:|
-| `faygolover.rppsyche` | 1 | 111 |
+| `faygolover.rppsyche` | 1 | 114 |
 | `faygolover.rppsyche.capability` | 1 | 132 |
 | `faygolover.rppsyche.client` | 7 | 589 |
 | `faygolover.rppsyche.config` | 1 | 225 |
 | `faygolover.rppsyche.core` | 4 | 503 |
-| `faygolover.rppsyche.gametest` | 1 | 199 |
+| `faygolover.rppsyche.gametest` | 1 | 226 |
 | `faygolover.rppsyche.integration` | 3 | 125 |
 | `faygolover.rppsyche.integration.voice` | 2 | 131 |
 | `faygolover.rppsyche.item` | 1 | 47 |
 | `faygolover.rppsyche.network` | 2 | 68 |
 | `faygolover.rppsyche.registry` | 2 | 50 |
-| `faygolover.rppsyche.server` | 6 | 1144 |
+| `faygolover.rppsyche.server` | 6 | 1152 |
 
 ## 2. Классы
 
 ### `faygolover.rppsyche`
-- `RpPsyche`, 111 — RP Psyche — стресс и рассудок, аддон к RP Medicine (план — docs/00_plan.md).
+- `RpPsyche`, 114 — RP Psyche — стресс и рассудок, аддон к RP Medicine (план — docs/00_plan.md).
 
 ### `faygolover.rppsyche.capability`
 - `PsycheData`, 132 — Психика игрока (сохраняется) и служебное состояние сервера (не сохраняется).
@@ -50,7 +50,7 @@
 - `Stutter`, 55 — Заикание от стресса: начало слова повторяется через дефис («п-п-подожди»), иногда — обрыв «...».
 
 ### `faygolover.rppsyche.gametest`
-- `PsycheEdgeTests`, 199 — Края состояния психики: запись и чтение, смерть, возврат из Края, перезаход.
+- `PsycheEdgeTests`, 226 — Края состояния психики: запись и чтение, смерть, возврат из Края, перезаход.
 
 ### `faygolover.rppsyche.integration`
 - `BodyCompat`, 45 — Что тело говорит психике: боль, лежачие, опьянение, седация, ломка.
@@ -73,7 +73,7 @@
 - `PsycheSounds`, 25 — Звуки психики: сердцебиение, гул, шорох; далёкие выстрелы (из пака TaCZ по умолчанию).
 
 ### `faygolover.rppsyche.server`
-- `Lights`, 82 — Полная тьма: свет у глаз почти ноль и ни у тебя, ни у игрока рядом нет света в руках или надетого в Curios (налобный фонарь, лампа на поясе).
+- `Lights`, 90 — Полная тьма: свет у глаз почти ноль и ни у тебя, ни у игрока рядом нет света в руках или надетого в Curios (налобный фонарь, лампа на поясе).
 - `PsycheCommands`, 114 — /rppsyche: цифры психики — только ГМу (уровень прав 2).
 - `PsycheService`, 699 — Психика на сервере.
 - `PsycheStatus`, 57 — Психика в осмотре RP Medicine (строки RP Core).
@@ -138,7 +138,7 @@
 
 ## 8. Что берёт из RP Core и что ему даёт
 
-Методы `RpCoreAPI` (сколько вызовов): `MISC_TAB` 1, `SpeechChannel` 1, `body` 6, `bodyRate` 1, `dayLengthSeconds` 1, `hasTrait` 8, `isSkillManaged` 1, `nutrition` 2, `registerCommand` 5, `registerMind` 1, `registerModule` 1, `registerSanity` 1, `registerSpeechFilter` 1, `registerStress` 1, `skill` 1, `sleepStage` 1, `timeRunning` 1.
+Методы `RpCoreAPI` (сколько вызовов): `MISC_TAB` 1, `SpeechChannel` 1, `body` 6, `bodyRate` 1, `carriesLight` 3, `dayLengthSeconds` 1, `hasTrait` 8, `isSkillManaged` 1, `nutrition` 2, `registerCommand` 5, `registerLight` 1, `registerMind` 1, `registerModule` 1, `registerSanity` 1, `registerSpeechFilter` 1, `registerStress` 1, `skill` 1, `sleepStage` 1, `timeRunning` 1.
 
 Реализует розетки: Source ← `PsycheStatus`.
 
