@@ -126,11 +126,13 @@ public final class PsycheService {
         sync(sp, d, 0, false);
     }
 
+    /**
+     * Шаг психики раз в секунду: собрать всё, что давит и что успокаивает, и передать ядру ({@link Psyche#step}).
+     * Источники идут строго в этом порядке — от него зависит результат до последнего знака.
+     */
     private static void step(ServerPlayer sp, PsycheData d, Settings c) {
         PsycheState s = d.state;
         Psyche.Inputs in = new Psyche.Inputs();
-        ServerLevel level = sp.serverLevel();
-        UUID id = sp.getUUID();
 
         boolean willed = RpCoreAPI.hasTrait(sp, RpIds.STRONG_WILLED);
         boolean suggestible = !willed && RpCoreAPI.hasTrait(sp, RpIds.SUGGESTIBLE);
@@ -138,7 +140,47 @@ public final class PsycheService {
         else if (RpCoreAPI.hasTrait(sp, RpIds.BRAVE)) in.gainMul *= c.braveGain;
         in.sanityLossMul = willed ? c.willedLoss : suggestible ? c.suggestibleLoss : 1;
 
-        // Тело (RP Medicine).
+        boolean calmed = bodyStep(sp, d, c, in);
+        needsStep(sp, d, c, in);
+        boolean darkPress = darknessStep(sp, s, c, in);
+        boolean alonePress = peopleStep(sp, s, c, in, darkPress);
+        downedStep(sp, c, in);
+        double psi = psiStep(sp, c, in, willed, suggestible);
+
+        // Голос: разговор с собой.
+        if (voice) voiceStep(sp, d, c, in.sanityLossMul);
+
+        // Досуг: музыка, настольные игры, дневник.
+        leisure(sp, d, c);
+        diary(sp, d, c);
+
+        in.impulse = d.impulse;
+        in.relief = d.relief;
+        in.sanityHit = d.sanityHit;
+        in.sanityBoost = d.sanityBoost;
+        d.impulse = d.relief = d.sanityHit = d.sanityBoost = 0;
+
+        double before = s.stress;
+        boolean peak = Psyche.step(s, in, c, 1.0);
+        if (peak && Psyche.cooldownShare(s.clock, s.panicAt, c.panicPeakCooldown) >= 1) {
+            s.sanity = Psyche.clamp(s.sanity - c.panicPeakLoss * in.sanityLossMul);
+            s.panicAt = s.clock;
+        }
+
+        int flags = (darkPress ? SyncPacket.DARK : 0) | (alonePress ? SyncPacket.ALONE : 0) | (psi > 0 ? SyncPacket.PSI : 0)
+                | (calmed ? SyncPacket.CALMED : 0);
+        sync(sp, d, flags, s.stress - before >= 8);
+        sensations(sp, d);
+    }
+
+    /**
+     * Тело (мод тела RP Core): боль, ломка и тяга, седация, опьянение, антипсихотик, возврат из клинической смерти.
+     * Возвращает, приглушены ли галлюцинации антипсихотиком (флаг клиенту).
+     */
+    private static boolean bodyStep(ServerPlayer sp, PsycheData d, Settings c, Psyche.Inputs in) {
+        PsycheState s = d.state;
+        ServerLevel level = sp.serverLevel();
+        UUID id = sp.getUUID();
         BodyCompat.Body b = BodyCompat.read(sp);
         if (b.pain() > c.painThreshold) {
             in.stressRate += (b.pain() - c.painThreshold) / Math.max(1, 100 - c.painThreshold) * c.painRate;
@@ -175,7 +217,11 @@ public final class PsycheService {
         boolean clinical = b.down() == 3;
         if (d.wasClinical && !clinical) d.sanityHit += c.clinicalReturnSanity * in.sanityLossMul;
         d.wasClinical = clinical;
+        return calmed;
+    }
 
+    /** Голод и жажда (мод питания), недосып (RP Needs), долгий холод или жара. */
+    private static void needsStep(ServerPlayer sp, PsycheData d, Settings c, Psyche.Inputs in) {
         // Голод и жажда (мод питания).
         NutritionProvider n = RpCoreAPI.nutrition();
         if (n != null) {
@@ -191,8 +237,10 @@ public final class PsycheService {
         if (tempBody != null && tempBody.temperatureOffset(sp) != 0) d.temperatureSeconds++;
         else d.temperatureSeconds = 0;
         if (d.temperatureSeconds > c.temperatureDelay) in.stressRate += c.temperatureRate;
+    }
 
-        // Полная тьма — копится, давит не сразу.
+    /** Полная тьма — копится, давит не сразу и только до своей отметки. Возвращает, давит ли сейчас. */
+    private static boolean darknessStep(ServerPlayer sp, PsycheState s, Settings c, Psyche.Inputs in) {
         if (Lights.inTotalDarkness(sp, c)) s.darkSeconds += 1;
         else s.darkSeconds = 0;
         boolean darkPress = s.darkSeconds > c.darkDelay;
@@ -200,8 +248,16 @@ public final class PsycheService {
             in.cappedRate = lerp(c.darkRate, c.darkRateMax, Psyche.ramp(s.darkSeconds - c.darkDelay, 0, c.darkRamp));
             in.cappedLimit = c.darkStressCap;
         }
+        return darkPress;
+    }
 
-        // Люди вокруг: одиночество, компания, заразность, разговор.
+    /**
+     * Люди вокруг: одиночество, компания, заразность паники и спокойствия, двусторонний разговор.
+     * Возвращает, давит ли сейчас одиночество.
+     */
+    private static boolean peopleStep(ServerPlayer sp, PsycheState s, Settings c, Psyche.Inputs in, boolean darkPress) {
+        ServerLevel level = sp.serverLevel();
+        UUID id = sp.getUUID();
         boolean alone = true, company = false, calmNear = false, panicNear = false, talkTogether = false;
         double aloneR2 = c.aloneRadius * c.aloneRadius, compR2 = c.companyRadius * c.companyRadius;
         double contR2 = c.contagionRadius * c.contagionRadius;
@@ -238,8 +294,12 @@ public final class PsycheService {
         if (calmNear) in.gainMul *= c.calmNearbyGain;
         if (talkTogether) in.decayMul *= c.voiceCompanyDecay;
         else if (company) in.decayMul *= c.companyDecay;
+        return alonePress;
+    }
 
-        // Лежачие рядом (видно): нокдаун, обморок, клиническая смерть, тело вышедшего.
+    /** Лежачие рядом (видно): нокдаун, обморок, клиническая смерть, тело вышедшего. */
+    private static void downedStep(ServerPlayer sp, Settings c, Psyche.Inputs in) {
+        ServerLevel level = sp.serverLevel();
         double downed = 0;
         AABB box = sp.getBoundingBox().inflate(c.downedRadius);
         for (Entity e : level.getEntities(sp, box, x -> x instanceof LivingEntity && BodyCompat.isDown(x))) {
@@ -247,39 +307,17 @@ public final class PsycheService {
             downed = Math.max(downed, BodyCompat.isClinical(e) ? c.clinicalRate : c.downedRate);
         }
         in.stressRate += downed;
+    }
 
-        // Пси-зона.
+    /** Пси-зона (Zone Artifacts, если стоит): стресс и утечка рассудка. Возвращает силу зоны (0 — вне зоны). */
+    private static double psiStep(ServerPlayer sp, Settings c, Psyche.Inputs in, boolean willed, boolean suggestible) {
         double psi = zoneArtifacts ? ZaCompat.psi(sp) : 0;
         if (psi > 0) {
             in.stressRate += c.psiStress * psi;
             double k = willed ? c.psiWilled : suggestible ? c.psiSuggestible : 1;
             in.sanityDrain += c.psiSanityPerMinute / 60.0 * psi * k;
         }
-
-        // Голос: разговор с собой.
-        if (voice) voiceStep(sp, d, c, in.sanityLossMul);
-
-        // Досуг: музыка, настольные игры, дневник.
-        leisure(sp, d, c);
-        diary(sp, d, c);
-
-        in.impulse = d.impulse;
-        in.relief = d.relief;
-        in.sanityHit = d.sanityHit;
-        in.sanityBoost = d.sanityBoost;
-        d.impulse = d.relief = d.sanityHit = d.sanityBoost = 0;
-
-        double before = s.stress;
-        boolean peak = Psyche.step(s, in, c, 1.0);
-        if (peak && Psyche.cooldownShare(s.clock, s.panicAt, c.panicPeakCooldown) >= 1) {
-            s.sanity = Psyche.clamp(s.sanity - c.panicPeakLoss * in.sanityLossMul);
-            s.panicAt = s.clock;
-        }
-
-        int flags = (darkPress ? SyncPacket.DARK : 0) | (alonePress ? SyncPacket.ALONE : 0) | (psi > 0 ? SyncPacket.PSI : 0)
-                | (calmed ? SyncPacket.CALMED : 0);
-        sync(sp, d, flags, s.stress - before >= 8);
-        sensations(sp, d);
+        return psi;
     }
 
     /**

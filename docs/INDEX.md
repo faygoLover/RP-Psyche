@@ -4,7 +4,7 @@
 **Руками не править**: пересоздаётся скриптом. Смысл, потоки работы и рецепты — в `docs/MAP.md`.
 Разбор по шаблонам, без компиляции: необычно оформленная регистрация может отсутствовать в списках.
 
-Всего: 31 файлов, 3362 строк Java.
+Всего: 31 файлов, 3400 строк Java.
 
 ## 1. Пакеты
 
@@ -21,7 +21,7 @@
 | `faygolover.rppsyche.item` | 1 | 47 |
 | `faygolover.rppsyche.network` | 2 | 68 |
 | `faygolover.rppsyche.registry` | 2 | 50 |
-| `faygolover.rppsyche.server` | 6 | 1152 |
+| `faygolover.rppsyche.server` | 6 | 1190 |
 
 ## 2. Классы
 
@@ -75,7 +75,7 @@
 ### `faygolover.rppsyche.server`
 - `Lights`, 90 — Полная тьма: свет у глаз почти ноль и ни у тебя, ни у игрока рядом нет света в руках или надетого в Curios (налобный фонарь, лампа на поясе).
 - `PsycheCommands`, 114 — /rppsyche: цифры психики — только ГМу (уровень прав 2).
-- `PsycheService`, 699 — Психика на сервере.
+- `PsycheService`, 737 — Психика на сервере.
 - `PsycheStatus`, 57 — Психика в осмотре RP Medicine (строки RP Core).
 - `Radios`, 37 — Рация в руке (Settings#voiceRadioItems, Simple Radio): голос уходит через неё, а не напрямую игрокам, и Simple Voice Chat не знает, кто услышал.
 - `Therapy`, 155 — Беседа с психологом (журнал психолога).
