@@ -1,6 +1,6 @@
 # RP Psyche — карта
 
-Версия на момент написания: 0.5.4 (16.11.2026). Факты по классам, событиям, пакетам — `docs/INDEX.md`.
+Версия на момент написания: 0.5.5 (26.11.2026). Факты по классам, событиям, пакетам — `docs/INDEX.md`.
 
 ## 1. Что делает и чего не делает
 
@@ -90,6 +90,8 @@ Minecraft → пик паники → `sync` клиенту → `sensations` (с
 Имена полей в `PsycheData.save/load` (`stress`, `sanity`, `dark_s`, `alone_s`, `was_clinical`…) — в файлах игроков, не менять.
 
 ## 6. Связи
+
+- Розетки Core 0.17 (`integration/BodyCompat`): правило тела `stress` (RP Boss, `RpCoreAPI.bodyForbids`) — толчки стресса и удары по рассудку не принимаются (`PsycheService.impulse`, `sanityHit`), после шага стресс не выше прежнего, рассудок не ниже; `BodyProvider.stressResist` (стимуляторы Medicine) — множитель роста стресса `1 − сила`.
 
 - Берёт из Core: `body()` через `BodyCompat` (боль, «лежит», опьянение, седация, ломка, тяга, антипсихотик,
   температура), `nutrition()`, `sleepStage`, `carriesLight`, `hasTrait`, `bodyRate`, `Consumables`, `Worn`;

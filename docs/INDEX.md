@@ -1,10 +1,10 @@
 # RP Psyche — указатель кода
 
-Создано `python _family/tools/mapgen.py`, версия мода 0.5.4-1.20.1-forge.
+Создано `python _family/tools/mapgen.py`, версия мода 0.5.5-1.20.1-forge.
 **Руками не править**: пересоздаётся скриптом. Смысл, потоки работы и рецепты — в `docs/MAP.md`.
 Разбор по шаблонам, без компиляции: необычно оформленная регистрация может отсутствовать в списках.
 
-Всего: 31 файлов, 3405 строк Java.
+Всего: 31 файлов, 3479 строк Java.
 
 ## 1. Пакеты
 
@@ -15,13 +15,13 @@
 | `faygolover.rppsyche.client` | 7 | 589 |
 | `faygolover.rppsyche.config` | 1 | 225 |
 | `faygolover.rppsyche.core` | 4 | 503 |
-| `faygolover.rppsyche.gametest` | 1 | 226 |
-| `faygolover.rppsyche.integration` | 3 | 125 |
+| `faygolover.rppsyche.gametest` | 1 | 273 |
+| `faygolover.rppsyche.integration` | 3 | 142 |
 | `faygolover.rppsyche.integration.voice` | 2 | 131 |
 | `faygolover.rppsyche.item` | 1 | 47 |
 | `faygolover.rppsyche.network` | 2 | 68 |
 | `faygolover.rppsyche.registry` | 2 | 50 |
-| `faygolover.rppsyche.server` | 6 | 1190 |
+| `faygolover.rppsyche.server` | 6 | 1200 |
 
 ## 2. Классы
 
@@ -50,10 +50,10 @@
 - `Stutter`, 55 — Заикание от стресса: начало слова повторяется через дефис («п-п-подожди»), иногда — обрыв «...».
 
 ### `faygolover.rppsyche.gametest`
-- `PsycheEdgeTests`, 226 — Края состояния психики: запись и чтение, смерть, возврат из Края, перезаход.
+- `PsycheEdgeTests`, 273 — Края состояния психики: запись и чтение, смерть, возврат из Края, перезаход.
 
 ### `faygolover.rppsyche.integration`
-- `BodyCompat`, 45 — Что тело говорит психике: боль, лежачие, опьянение, седация, ломка.
+- `BodyCompat`, 62 — Что тело говорит психике: боль, лежачие, опьянение, седация, ломка.
 - `TaczCompat`, 57 — TaCZ (необязательный): выстрел слышат все вокруг, а у кого пуля прошла у самой головы — подавление.
 - `ZaCompat`, 23 — Zone Artifacts (необязательный): в Пси-зоне ли игрок.
 
@@ -75,7 +75,7 @@
 ### `faygolover.rppsyche.server`
 - `Lights`, 90 — Полная тьма: свет у глаз почти ноль и ни у тебя, ни у игрока рядом нет света в руках или надетого в Curios (налобный фонарь, лампа на поясе).
 - `PsycheCommands`, 114 — /rppsyche: цифры психики — только ГМу (уровень прав 2).
-- `PsycheService`, 737 — Психика на сервере.
+- `PsycheService`, 747 — Психика на сервере.
 - `PsycheStatus`, 57 — Психика в осмотре RP Medicine (строки RP Core).
 - `Radios`, 37 — Рация в руке (Settings#voiceRadioItems, Simple Radio): голос уходит через неё, а не напрямую игрокам, и Simple Voice Chat не знает, кто услышал.
 - `Therapy`, 155 — Беседа с психологом (журнал психолога).
@@ -138,7 +138,7 @@
 
 ## 8. Что берёт из RP Core и что ему даёт
 
-Методы `RpCoreAPI` (сколько вызовов): `MISC_TAB` 1, `SpeechChannel` 1, `body` 6, `bodyRate` 1, `carriesLight` 3, `dayLengthSeconds` 1, `hasTrait` 8, `isSkillManaged` 1, `nutrition` 2, `registerCommand` 5, `registerLight` 1, `registerMind` 1, `registerModule` 1, `registerSanity` 1, `registerSpeechFilter` 1, `registerStress` 1, `reportCompat` 4, `skill` 1, `sleepStage` 1, `timeRunning` 1.
+Методы `RpCoreAPI` (сколько вызовов): `MISC_TAB` 1, `SpeechChannel` 1, `body` 7, `bodyForbids` 1, `bodyRate` 1, `carriesLight` 3, `dayLengthSeconds` 1, `hasTrait` 8, `isSkillManaged` 1, `nutrition` 2, `registerCommand` 5, `registerLight` 1, `registerMind` 1, `registerModule` 1, `registerSanity` 1, `registerSpeechFilter` 1, `registerStress` 1, `reportCompat` 4, `skill` 1, `sleepStage` 1, `timeRunning` 1.
 
 Реализует розетки: Source ← `PsycheStatus`.
 

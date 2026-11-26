@@ -26,7 +26,7 @@ description='''${mod_description}'''
 [[dependencies.${mod_id}]]
     modId="rpcore"
     mandatory=true
-    versionRange="[0.15,)"
+    versionRange="[0.17,)"
     ordering="AFTER"
     side="BOTH"
 

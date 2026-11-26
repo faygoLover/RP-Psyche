@@ -30,6 +30,23 @@ public final class BodyCompat {
                 b.antipsychotic(p), b.craving(p), b.formerAddiction(p));
     }
 
+    /** Id правила тела «без стресса» ({@code RpIds.BODY_RULES}, RP Core 0.17). */
+    public static final String STRESS_RULE = "stress";
+
+    /**
+     * Правило тела (RP Boss через розетку RP Core 0.17): стресс не растёт, толчки стресса и удары по рассудку не
+     * действуют, рассудок не проседает.
+     */
+    public static boolean stressForbidden(Player p) {
+        return RpCoreAPI.bodyForbids(p, STRESS_RULE);
+    }
+
+    /** Стресс растёт медленнее (стимуляторы мода тела), 0–1; без мода тела — 0. */
+    public static double stressResist(Player p) {
+        BodyProvider b = RpCoreAPI.body();
+        return b == null ? 0 : Math.max(0, Math.min(1, b.stressResist(p)));
+    }
+
     /** Лежит (нокдаун, обморок, клиническая смерть, тело вышедшего игрока). */
     public static boolean isDown(Entity e) {
         BodyProvider b = RpCoreAPI.body();

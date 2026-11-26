@@ -222,4 +222,51 @@ public final class PsycheEdgeTests {
         }
         h.succeed();
     }
+
+    /**
+     * Правило тела «stress» (RP Boss через RP Core 0.17): толчки и удары по рассудку не принимаются, шаг не поднимает
+     * стресс и не роняет рассудок. Без правила — как раньше.
+     */
+    @GameTest(template = T, batch = "psyche_edge_rules")
+    public static void bodyRuleFreezesStress(GameTestHelper h) {
+        ServerPlayer p = player(h);
+        net.minecraft.resources.ResourceLocation id = new net.minecraft.resources.ResourceLocation(RpPsyche.MODID, "test_rules");
+        try {
+            PsycheData d = PsycheData.get(p);
+            if (d == null) { h.fail("У игрока нет данных психики"); return; }
+            faygolover.rpcore.api.RpCoreAPI.registerBodyRules(id, new faygolover.rpcore.api.BodyRulesProvider() {
+                @Override
+                public boolean forbids(net.minecraft.world.entity.player.Player player, String rule) {
+                    return player == p && rule.equals("stress");
+                }
+            });
+            double impulse = d.impulse, hit = d.sanityHit;
+            faygolover.rpcore.api.RpCoreAPI.stressImpulse(p, 30);
+            faygolover.rpcore.api.RpCoreAPI.sanityHit(p, 10);
+            if (d.impulse != impulse || d.sanityHit != hit) h.fail("С правилом толчок или удар приняты");
+            d.state.stress = 20;
+            d.state.sanity = 70;
+            d.impulse = 50;
+            d.sanityHit = 5;
+            boolean running = faygolover.rpcore.api.RpCoreAPI.timeRunning();
+            p.tickCount = 0;
+            faygolover.rppsyche.server.PsycheService.onPlayerTick(new net.minecraftforge.event.TickEvent.PlayerTickEvent(
+                    net.minecraftforge.event.TickEvent.Phase.END, p));
+            if (d.state.stress > 20 + 1e-9 || d.state.sanity < 70 - 1e-9)
+                h.fail("С правилом стресс вырос или рассудок упал: " + d.state.stress + ", " + d.state.sanity);
+            faygolover.rpcore.api.RpCoreAPI.registerBodyRules(id, null);
+            faygolover.rpcore.api.RpCoreAPI.stressImpulse(p, 30);
+            if (Math.abs(d.impulse - 30) > 1e-9) h.fail("Без правила толчок не принят: " + d.impulse);
+            if (running) {
+                p.tickCount = 0;
+                faygolover.rppsyche.server.PsycheService.onPlayerTick(new net.minecraftforge.event.TickEvent.PlayerTickEvent(
+                        net.minecraftforge.event.TickEvent.Phase.END, p));
+                if (d.state.stress <= 20 - 1e-9 && d.state.pending <= 0) h.fail("Без правила толчок не дошёл: " + d.state.stress);
+            }
+        } finally {
+            faygolover.rpcore.api.RpCoreAPI.registerBodyRules(id, null);
+            remove(h, p);
+        }
+        h.succeed();
+    }
 }

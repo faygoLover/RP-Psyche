@@ -69,14 +69,14 @@ public final class PsycheService {
 
     /** Разовый удар по рассудку от других модов (RP Core, {@code MindProvider}) — войдёт на ближайшем шаге. */
     public static void sanityHit(ServerPlayer p, double amount) {
-        if (amount <= 0 || !affected(p)) return;
+        if (amount <= 0 || !affected(p) || BodyCompat.stressForbidden(p)) return;
         PsycheData d = PsycheData.get(p);
         if (d != null) d.sanityHit += amount;
     }
 
     /** Разовый толчок стресса (выстрел, взрыв) — войдёт на ближайшем шаге. */
     public static void impulse(ServerPlayer p, double amount) {
-        if (amount <= 0 || !affected(p)) return;
+        if (amount <= 0 || !affected(p) || BodyCompat.stressForbidden(p)) return;
         PsycheData d = PsycheData.get(p);
         if (d != null && !paused(d)) d.impulse += amount;
     }
@@ -139,6 +139,8 @@ public final class PsycheService {
         if (RpCoreAPI.hasTrait(sp, RpIds.COWARD)) in.gainMul *= c.cowardGain;
         else if (RpCoreAPI.hasTrait(sp, RpIds.BRAVE)) in.gainMul *= c.braveGain;
         in.sanityLossMul = willed ? c.willedLoss : suggestible ? c.suggestibleLoss : 1;
+        // Стимуляторы RP Medicine (розетка Core 0.17, BodyProvider.stressResist): стресс растёт медленнее.
+        in.gainMul *= 1 - BodyCompat.stressResist(sp);
 
         boolean calmed = bodyStep(sp, d, c, in);
         needsStep(sp, d, c, in);
@@ -161,7 +163,15 @@ public final class PsycheService {
         d.impulse = d.relief = d.sanityHit = d.sanityBoost = 0;
 
         double before = s.stress;
+        double sanityBefore = s.sanity;
         boolean peak = Psyche.step(s, in, c, 1.0);
+        // Правило тела «stress» (RP Boss через RP Core 0.17): стресс не растёт и рассудок не проседает; спадать могут.
+        if (BodyCompat.stressForbidden(sp)) {
+            s.stress = Math.min(s.stress, before);
+            s.sanity = Math.max(s.sanity, sanityBefore);
+            s.pending = 0;
+            peak = false;
+        }
         if (peak && Psyche.cooldownShare(s.clock, s.panicAt, c.panicPeakCooldown) >= 1) {
             s.sanity = Psyche.clamp(s.sanity - c.panicPeakLoss * in.sanityLossMul);
             s.panicAt = s.clock;
